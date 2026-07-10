@@ -1,0 +1,1786 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trust Drive — L'annonce auto décodée, la bonne affaire confirmée</title>
+<meta name="description" content="Collez le lien d'une annonce Le bon coin : Trust Drive identifie le véhicule, calcule sa cote réelle, liste les défauts connus de sa motorisation et vous dit si l'affaire vaut le coup.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Calistoga&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --bg-deep:#050507;
+  --bg-base:#08080C;
+  --bg-raised:#0E0E14;
+  --bg-overlay:#12121A;
+  --surface:rgba(255,255,255,.04);
+  --surface-2:rgba(255,255,255,.07);
+  --ink:#EDEDF2;
+  --ink-2:#A7ACB8;
+  --ink-3:#858B99;
+  --line:rgba(255,255,255,.08);
+  --line-strong:rgba(255,255,255,.16);
+  --accent:#5B6CF0;
+  --accent-text:#9DA9FF;
+  --accent-soft:rgba(100,120,255,.13);
+  --accent-glow:rgba(100,120,255,.22);
+  --good:#4ADE80;
+  --good-soft:rgba(74,222,128,.12);
+  --warn:#FBBF24;
+  --warn-soft:rgba(251,191,36,.12);
+  --bad:#F87171;
+  --bad-soft:rgba(248,113,113,.12);
+  --radius:16px;
+  --radius-sm:10px;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --font-display:'Calistoga',Georgia,'Times New Roman',serif;
+  --font-ui:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  --space-1:8px; --space-2:16px; --space-3:24px; --space-4:32px;
+  --space-5:48px; --space-6:64px; --space-7:96px; --space-8:128px;
+  --z-nav:100; --z-overlay:200;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+body{
+  font-family:var(--font-ui);
+  background:linear-gradient(180deg,var(--bg-base) 0%,var(--bg-deep) 100%);
+  color:var(--ink);
+  font-size:16px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+  min-height:100dvh;
+}
+::selection{background:var(--accent);color:#fff}
+
+/* ============ A11Y ============ */
+.skip-link{
+  position:absolute;left:16px;top:-56px;z-index:calc(var(--z-nav) + 1);
+  background:var(--accent);color:#fff;font-weight:600;
+  padding:12px 20px;border-radius:var(--radius-sm);
+  transition:top .2s var(--ease);
+}
+.skip-link:focus{top:16px}
+:focus-visible{outline:3px solid var(--accent-text);outline-offset:3px;border-radius:4px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* ============ AMBIENT ============ */
+.ambient{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.blob{position:absolute;border-radius:50%;filter:blur(70px);opacity:.12}
+.blob-1{width:560px;height:560px;top:-180px;left:-120px;background:radial-gradient(circle,#5B6CF0,transparent 70%);animation:drift1 26s ease-in-out infinite alternate}
+.blob-2{width:480px;height:480px;top:32%;right:-160px;background:radial-gradient(circle,#3B4CC0,transparent 70%);animation:drift2 32s ease-in-out infinite alternate}
+@keyframes drift1{from{transform:translate(0,0)}to{transform:translate(70px,90px)}}
+@keyframes drift2{from{transform:translate(0,0)}to{transform:translate(-80px,-60px)}}
+@media (prefers-reduced-motion:reduce){.blob{animation:none}}
+
+/* ============ LAYOUT ============ */
+.wrap{position:relative;z-index:1;max-width:1120px;margin:0 auto;padding:0 24px}
+section{padding:var(--space-7) 0}
+.section-head{max-width:640px;margin:0 auto var(--space-6);text-align:center}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent-text);
+  background:var(--accent-soft);border:1px solid var(--line);
+  padding:6px 14px;border-radius:999px;margin-bottom:var(--space-3);
+}
+h1,h2,h3{font-family:var(--font-display);font-weight:400;line-height:1.15;letter-spacing:.01em}
+h2{font-size:clamp(28px,4vw,40px);margin-bottom:var(--space-2)}
+.section-head p{color:var(--ink-2);font-size:17px}
+
+/* ============ NAV ============ */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:var(--z-nav);
+  background:rgba(8,8,12,.72);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--line);
+}
+.nav-inner{max-width:1120px;margin:0 auto;padding:0 24px;height:68px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-family:var(--font-display);font-size:20px}
+.brand svg{flex:none}
+.nav-links{display:flex;align-items:center;gap:4px;list-style:none}
+.nav-links a{
+  display:inline-flex;align-items:center;min-height:44px;padding:0 14px;
+  color:var(--ink-2);text-decoration:none;font-size:14.5px;font-weight:500;
+  border-radius:var(--radius-sm);transition:color .2s var(--ease),background .2s var(--ease);
+}
+.nav-links a:hover{color:var(--ink);background:var(--surface)}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  min-height:48px;padding:0 22px;border-radius:12px;
+  font-family:var(--font-ui);font-size:15px;font-weight:600;
+  text-decoration:none;cursor:pointer;border:1px solid transparent;
+  transition:transform .2s var(--ease),box-shadow .25s var(--ease),background .2s var(--ease);
+}
+.btn:active{transform:scale(.97)}
+.btn-primary{
+  background:var(--accent);color:#fff;
+  box-shadow:0 0 0 1px rgba(255,255,255,.08) inset,0 8px 28px -8px var(--accent-glow);
+}
+.btn-primary:hover{background:#6B7BF5;box-shadow:0 0 0 1px rgba(255,255,255,.12) inset,0 10px 36px -6px var(--accent-glow)}
+.btn-ghost{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.btn-ghost:hover{background:var(--surface-2);border-color:var(--line-strong)}
+.nav .btn{min-height:42px;padding:0 18px;font-size:14px}
+.burger{display:none;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);width:44px;height:44px;align-items:center;justify-content:center;cursor:pointer;color:var(--ink)}
+
+/* ============ HERO ============ */
+.hero{padding:calc(68px + var(--space-7)) 0 var(--space-6);text-align:center}
+.hero h1{font-size:clamp(38px,6vw,64px);max-width:820px;margin:0 auto var(--space-3)}
+.hero h1 em{font-style:normal;color:var(--accent-text)}
+.hero-sub{color:var(--ink-2);font-size:clamp(16px,2vw,19px);max-width:660px;margin:0 auto var(--space-5)}
+.hero-sub strong{color:var(--ink);font-weight:600}
+
+/* Analyzer card */
+.analyzer{
+  max-width:760px;margin:0 auto;
+  background:var(--bg-raised);
+  border:1px solid var(--line);border-radius:20px;
+  box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 24px 80px -24px rgba(0,0,0,.8),0 0 120px -40px var(--accent-glow);
+  padding:var(--space-4);text-align:left;
+}
+.analyzer-label{display:block;font-size:13.5px;font-weight:600;color:var(--ink-2);margin-bottom:10px}
+.analyzer-row{display:flex;gap:10px}
+.analyzer input[type="url"]{
+  flex:1;min-width:0;min-height:52px;padding:0 18px;
+  background:var(--bg-base);border:1px solid var(--line-strong);border-radius:12px;
+  color:var(--ink);font-family:var(--font-mono);font-size:14px;
+  transition:border-color .2s var(--ease),box-shadow .2s var(--ease);
+}
+.analyzer input[type="url"]::placeholder{color:var(--ink-3)}
+.analyzer input[type="url"]:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.field-error{display:none;margin-top:10px;font-size:14px;color:var(--bad);align-items:center;gap:8px}
+.field-error.visible{display:flex}
+.demo-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:var(--space-3);align-items:center}
+.demo-chips-label{font-size:13px;color:var(--ink-3);margin-right:4px}
+.chip{
+  display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 14px;
+  background:var(--surface);border:1px solid var(--line);border-radius:999px;
+  color:var(--ink-2);font-size:13.5px;font-weight:500;cursor:pointer;
+  transition:all .2s var(--ease);
+}
+.chip:hover{background:var(--accent-soft);border-color:var(--accent);color:var(--ink)}
+.demo-note{display:flex;align-items:flex-start;gap:8px;margin-top:var(--space-3);font-size:12.5px;color:var(--ink-3)}
+.demo-note svg{flex:none;margin-top:2px}
+
+/* Identification panel */
+.identify{margin-top:var(--space-4);border-top:1px solid var(--line);padding-top:var(--space-3)}
+.identify[hidden]{display:none}
+.identify-msg{display:flex;gap:9px;align-items:flex-start;font-size:14.5px;color:var(--ink-2);margin-bottom:var(--space-3)}
+.identify-msg svg{flex:none;color:var(--accent-text);margin-top:3px}
+.identify-msg strong{color:var(--ink)}
+.identify-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.fld label{display:block;font-size:12.5px;font-weight:600;color:var(--ink-3);margin-bottom:6px}
+.fld select,.fld input{
+  width:100%;min-height:48px;padding:0 12px;
+  background:var(--bg-base);border:1px solid var(--line-strong);border-radius:10px;
+  color:var(--ink);font-family:var(--font-ui);font-size:14px;
+  transition:border-color .2s var(--ease),box-shadow .2s var(--ease);
+}
+.fld input{font-family:var(--font-mono)}
+.fld select:focus,.fld input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.fld select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%23858B99' stroke-width='2' fill='none' stroke-linecap='round'/></svg>");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+.identify-actions{margin-top:var(--space-3);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+
+/* Zone de collage (extraction automatique) */
+.paste-zone{margin-top:var(--space-3);border-top:1px dashed var(--line);padding-top:var(--space-3)}
+.paste-zone label{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink-2);margin-bottom:8px}
+.paste-zone label svg{color:var(--accent-text)}
+.paste-zone textarea{
+  width:100%;min-height:64px;max-height:180px;padding:12px 14px;resize:vertical;
+  background:var(--bg-base);border:1px solid var(--line-strong);border-radius:10px;
+  color:var(--ink);font-family:var(--font-ui);font-size:13px;line-height:1.5;
+  transition:border-color .2s var(--ease),box-shadow .2s var(--ease);
+}
+.paste-zone textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.paste-zone .hint{font-size:12px;color:var(--ink-3);margin-top:6px}
+.extract-status{display:none;align-items:center;gap:9px;margin-top:12px;font-size:13.5px;color:var(--ink-2)}
+.extract-status.visible{display:flex}
+.extract-status .spin{width:16px;height:16px;flex:none;border:2px solid var(--line-strong);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.extract-status.ok{color:var(--good)}
+.extract-status.ko{color:var(--warn)}
+
+/* Scan state */
+.scan{display:none;margin-top:var(--space-4);border-top:1px solid var(--line);padding-top:var(--space-3)}
+.scan.active{display:block}
+.scan-step{display:flex;align-items:center;gap:12px;padding:9px 0;font-size:14.5px;color:var(--ink-3);transition:color .3s var(--ease)}
+.scan-step .dot{width:22px;height:22px;flex:none;border-radius:50%;border:2px solid var(--line-strong);display:inline-flex;align-items:center;justify-content:center;transition:all .3s var(--ease)}
+.scan-step .dot svg{opacity:0;transform:scale(.4);transition:all .3s var(--ease)}
+.scan-step.running{color:var(--ink)}
+.scan-step.running .dot{border-color:var(--accent);animation:pulse 1s ease-in-out infinite}
+.scan-step.done{color:var(--ink-2)}
+.scan-step.done .dot{border-color:var(--good);background:var(--good-soft)}
+.scan-step.done .dot svg{opacity:1;transform:scale(1)}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 var(--accent-glow)}50%{box-shadow:0 0 0 6px transparent}}
+
+/* Trust markers */
+.hero-markers{display:flex;justify-content:center;flex-wrap:wrap;gap:var(--space-3);margin-top:var(--space-4);color:var(--ink-3);font-size:13.5px}
+.hero-markers span{display:inline-flex;align-items:center;gap:7px}
+.hero-markers svg{color:var(--good)}
+
+/* ============ STATS BAND ============ */
+.stats-band{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:rgba(255,255,255,.015);padding:var(--space-5) 0}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-4);text-align:center}
+.stat-num{font-family:var(--font-mono);font-size:clamp(26px,3.4vw,38px);font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+.stat-num .unit{font-size:.55em;color:var(--accent-text)}
+.stat-label{font-size:13.5px;color:var(--ink-3);margin-top:4px}
+
+/* ============ REPORT ============ */
+#rapport{display:none;scroll-margin-top:90px}
+#rapport.visible{display:block}
+.report-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:var(--space-3);margin-bottom:var(--space-4)}
+.report-title h2{margin-bottom:6px}
+.report-title .car-sub{color:var(--ink-2);font-size:15.5px}
+.report-title .car-sub .sep{color:var(--ink-3);margin:0 6px}
+.report-price{text-align:right}
+.report-price .amount{font-family:var(--font-mono);font-size:clamp(28px,3.6vw,40px);font-weight:600;font-variant-numeric:tabular-nums}
+.report-price .src{font-size:13px;color:var(--ink-3)}
+.verdict-pill{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:8px 16px;border-radius:999px;font-weight:600;font-size:14.5px;
+  border:1px solid;
+}
+.verdict-pill.v-good{color:var(--good);background:var(--good-soft);border-color:rgba(74,222,128,.3)}
+.verdict-pill.v-warn{color:var(--warn);background:var(--warn-soft);border-color:rgba(251,191,36,.3)}
+.verdict-pill.v-bad{color:var(--bad);background:var(--bad-soft);border-color:rgba(248,113,113,.3)}
+
+.report-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:var(--space-2)}
+.card{
+  background:var(--bg-raised);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:0 1px 0 rgba(255,255,255,.05) inset;
+  padding:var(--space-3);
+}
+.card h3{font-family:var(--font-ui);font-weight:600;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-bottom:var(--space-3);display:flex;align-items:center;gap:8px}
+.card h3 svg{color:var(--accent-text)}
+.col-4{grid-column:span 4}.col-5{grid-column:span 5}.col-6{grid-column:span 6}
+.col-7{grid-column:span 7}.col-8{grid-column:span 8}.col-12{grid-column:span 12}
+
+/* Gauge */
+.gauge-card{display:flex;flex-direction:column;align-items:center;text-align:center}
+.gauge-wrap{position:relative;width:190px;height:190px;margin:auto 0}
+.gauge-wrap svg{transform:rotate(135deg)}
+.gauge-track,.gauge-fill{fill:none;stroke-width:11;stroke-linecap:round}
+.gauge-track{stroke:var(--surface-2)}
+.gauge-fill{stroke:var(--good);transition:stroke-dashoffset 1.2s var(--ease),stroke .4s}
+.gauge-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.gauge-score{font-family:var(--font-mono);font-size:46px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums}
+.gauge-max{font-size:13px;color:var(--ink-3);margin-top:4px}
+.gauge-bands{display:flex;gap:14px;margin-top:var(--space-3);font-size:12px;color:var(--ink-3)}
+.gauge-bands span{display:inline-flex;align-items:center;gap:6px}
+.band-dot{width:8px;height:8px;border-radius:50%}
+
+/* Price position */
+.price-labels{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:12.5px;color:var(--ink-3);margin-bottom:8px;font-variant-numeric:tabular-nums}
+.price-track{position:relative;height:10px;border-radius:999px;background:linear-gradient(90deg,rgba(74,222,128,.35),rgba(251,191,36,.3) 55%,rgba(248,113,113,.35));margin:26px 0 36px}
+.price-median{position:absolute;top:-7px;bottom:-7px;width:2px;background:var(--ink-2);border-radius:2px}
+.price-median::after{content:"cote";position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:6px;font-size:11px;color:var(--ink-3);font-family:var(--font-ui)}
+.price-marker{
+  position:absolute;top:50%;width:22px;height:22px;border-radius:50%;
+  background:var(--bg-raised);border:3px solid var(--accent-text);
+  transform:translate(-50%,-50%);
+  box-shadow:0 0 0 2px var(--bg-raised),0 0 20px -2px var(--accent-glow);
+  transition:left 1s var(--ease);
+}
+.price-marker::before{
+  content:attr(data-label);position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);
+  font-family:var(--font-mono);font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap;
+  background:var(--bg-overlay);border:1px solid var(--line-strong);border-radius:8px;padding:3px 9px;
+}
+.price-delta{display:flex;align-items:center;gap:10px;margin-top:var(--space-3);padding-top:var(--space-3);border-top:1px solid var(--line)}
+.delta-badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-weight:600;font-size:15px;padding:6px 12px;border-radius:var(--radius-sm)}
+.delta-badge.d-good{color:var(--good);background:var(--good-soft)}
+.delta-badge.d-warn{color:var(--warn);background:var(--warn-soft)}
+.delta-badge.d-bad{color:var(--bad);background:var(--bad-soft)}
+.price-delta p{font-size:14px;color:var(--ink-2)}
+
+/* Specs */
+.specs-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-2)}
+.spec{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px}
+.spec .k{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-3);margin-bottom:6px}
+.spec .k svg{color:var(--accent-text);flex:none}
+.spec .v{font-weight:600;font-size:15px;font-variant-numeric:tabular-nums}
+
+/* Flags */
+.flag-list{list-style:none;display:flex;flex-direction:column;gap:12px}
+.flag-list li{display:flex;gap:12px;font-size:14.5px;color:var(--ink-2);line-height:1.5}
+.flag-list li strong{color:var(--ink);font-weight:600}
+.flag-icon{flex:none;width:24px;height:24px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;margin-top:1px}
+.flag-icon.f-good{background:var(--good-soft);color:var(--good)}
+.flag-icon.f-bad{background:var(--bad-soft);color:var(--bad)}
+.flag-icon.f-warn{background:var(--warn-soft);color:var(--warn)}
+
+/* Decote + budget tiles */
+.tile-row{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-2)}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:16px}
+.tile .t-label{font-size:12.5px;color:var(--ink-3);margin-bottom:6px}
+.tile .t-value{font-family:var(--font-mono);font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+.tile .t-value .unit{font-size:.65em;color:var(--ink-3);font-weight:400}
+.spark-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:var(--space-2)}
+.spark-value{font-family:var(--font-mono);font-size:24px;font-weight:600;font-variant-numeric:tabular-nums}
+.spark-caption{font-size:13px;color:var(--ink-3)}
+.sparkline{width:100%;height:76px;display:block}
+.sparkline .line{fill:none;stroke:var(--accent-text);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sparkline .area{fill:url(#sparkfill);opacity:.5}
+.sparkline .pt{fill:var(--accent-text);stroke:var(--bg-raised);stroke-width:2}
+.spark-axis{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:11px;color:var(--ink-3);margin-top:6px}
+
+/* Pré-achat (contrôles + questions) */
+.preachat{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4)}
+.preachat h4{font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-bottom:var(--space-2);display:flex;align-items:center;gap:8px}
+.preachat h4 svg{color:var(--accent-text)}
+
+/* Nego */
+.nego-offer{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:var(--space-2)}
+.nego-offer .range{font-family:var(--font-mono);font-size:clamp(22px,3vw,30px);font-weight:600;color:var(--good);font-variant-numeric:tabular-nums}
+.nego-offer .lbl{font-size:14px;color:var(--ink-3)}
+.nego-args{list-style:none;display:flex;flex-direction:column;gap:9px;margin-bottom:var(--space-3)}
+.nego-args li{display:flex;gap:10px;font-size:14px;color:var(--ink-2)}
+.nego-args svg{flex:none;color:var(--accent-text);margin-top:2px}
+.copy-feedback{font-size:13px;color:var(--good);margin-left:12px;opacity:0;transition:opacity .3s}
+.copy-feedback.show{opacity:1}
+
+/* Verdict banner */
+.verdict-banner{
+  margin-top:var(--space-2);border-radius:var(--radius);padding:var(--space-4);
+  display:flex;gap:var(--space-3);align-items:flex-start;border:1px solid;
+}
+.verdict-banner.v-good{background:var(--good-soft);border-color:rgba(74,222,128,.25)}
+.verdict-banner.v-warn{background:var(--warn-soft);border-color:rgba(251,191,36,.25)}
+.verdict-banner.v-bad{background:var(--bad-soft);border-color:rgba(248,113,113,.25)}
+.verdict-banner .vb-icon{flex:none;width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center}
+.verdict-banner.v-good .vb-icon{background:rgba(74,222,128,.18);color:var(--good)}
+.verdict-banner.v-warn .vb-icon{background:rgba(251,191,36,.18);color:var(--warn)}
+.verdict-banner.v-bad .vb-icon{background:rgba(248,113,113,.18);color:var(--bad)}
+.verdict-banner h3{font-family:var(--font-display);font-size:21px;margin-bottom:6px}
+.verdict-banner p{color:var(--ink-2);font-size:15px;max-width:70ch}
+
+/* ============ STEPS ============ */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-2)}
+.step-card{position:relative;background:var(--bg-raised);border:1px solid var(--line);border-radius:var(--radius);padding:var(--space-4) var(--space-3) var(--space-3)}
+.step-num{
+  position:absolute;top:-16px;left:var(--space-3);
+  font-family:var(--font-mono);font-weight:600;font-size:14px;color:var(--accent-text);
+  background:var(--bg-overlay);border:1px solid var(--line-strong);border-radius:999px;
+  padding:5px 13px;
+}
+.step-card h3{font-family:var(--font-ui);font-weight:600;font-size:17px;margin:var(--space-1) 0 8px;display:flex;align-items:center;gap:10px}
+.step-card h3 svg{color:var(--accent-text)}
+.step-card p{color:var(--ink-2);font-size:14.5px}
+
+/* ============ FEATURES ============ */
+.features{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-2)}
+.feature{
+  background:var(--bg-raised);border:1px solid var(--line);border-radius:var(--radius);
+  padding:var(--space-3);transition:border-color .25s var(--ease),transform .25s var(--ease);
+}
+.feature:hover{border-color:var(--line-strong);transform:translateY(-3px)}
+.feature-icon{
+  width:44px;height:44px;border-radius:12px;background:var(--accent-soft);
+  color:var(--accent-text);display:flex;align-items:center;justify-content:center;
+  margin-bottom:var(--space-2);
+}
+.feature h3{font-family:var(--font-ui);font-weight:600;font-size:16.5px;margin-bottom:8px}
+.feature p{color:var(--ink-2);font-size:14.5px}
+
+/* ============ TESTIMONIALS ============ */
+.quotes{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-2)}
+.quote{background:var(--bg-raised);border:1px solid var(--line);border-radius:var(--radius);padding:var(--space-3);display:flex;flex-direction:column;gap:var(--space-2)}
+.quote blockquote{color:var(--ink-2);font-size:14.5px;flex:1}
+.quote blockquote strong{color:var(--ink)}
+.quote-author{display:flex;align-items:center;gap:12px}
+.avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;color:#fff}
+.quote-author .who{font-size:13.5px}
+.quote-author .who b{display:block;color:var(--ink);font-weight:600}
+.quote-author .who span{color:var(--ink-3)}
+
+/* ============ PRICING ============ */
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-2);align-items:stretch}
+.plan{background:var(--bg-raised);border:1px solid var(--line);border-radius:20px;padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-3);position:relative}
+.plan.featured{border-color:var(--accent);box-shadow:0 0 60px -20px var(--accent-glow)}
+.plan-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:12px;font-weight:600;letter-spacing:.06em;padding:5px 14px;border-radius:999px;text-transform:uppercase}
+.plan h3{font-family:var(--font-ui);font-weight:600;font-size:17px}
+.plan .price{font-family:var(--font-mono);font-size:38px;font-weight:600;font-variant-numeric:tabular-nums}
+.plan .price .per{font-size:14px;color:var(--ink-3);font-weight:400;font-family:var(--font-ui)}
+.plan-desc{color:var(--ink-3);font-size:13.5px;margin-top:-14px}
+.plan ul{list-style:none;display:flex;flex-direction:column;gap:10px;flex:1}
+.plan ul li{display:flex;gap:10px;font-size:14px;color:var(--ink-2)}
+.plan ul svg{flex:none;color:var(--good);margin-top:3px}
+.plan .btn{width:100%}
+
+/* ============ FAQ ============ */
+.faq{max-width:720px;margin:0 auto}
+.faq details{border:1px solid var(--line);border-radius:var(--radius);background:var(--bg-raised);margin-bottom:12px;overflow:hidden}
+.faq summary{
+  list-style:none;cursor:pointer;padding:18px 20px;font-weight:600;font-size:15.5px;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:44px;
+  transition:background .2s var(--ease);
+}
+.faq summary:hover{background:var(--surface)}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary svg{flex:none;transition:transform .3s var(--ease);color:var(--ink-3)}
+.faq details[open] summary svg{transform:rotate(45deg)}
+.faq .faq-body{padding:0 20px 18px;color:var(--ink-2);font-size:14.5px}
+
+/* ============ FINAL CTA / FOOTER ============ */
+.final-cta{text-align:center}
+.final-cta h2{font-size:clamp(30px,4.5vw,46px);max-width:640px;margin:0 auto var(--space-2)}
+.final-cta p{color:var(--ink-2);margin-bottom:var(--space-4)}
+footer{border-top:1px solid var(--line);padding:var(--space-5) 0;color:var(--ink-3);font-size:13.5px}
+.footer-inner{display:flex;flex-wrap:wrap;justify-content:space-between;gap:var(--space-3);align-items:center}
+.footer-inner .brand{font-size:17px}
+footer .disclaimer{max-width:520px;line-height:1.55}
+footer nav ul{list-style:none;display:flex;gap:4px;flex-wrap:wrap}
+footer nav a{color:var(--ink-3);text-decoration:none;padding:8px 10px;display:inline-flex;min-height:44px;align-items:center;border-radius:8px}
+footer nav a:hover{color:var(--ink)}
+
+/* ============ REVEAL ============ */
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+.reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none}}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width:960px){
+  .col-4,.col-5,.col-6,.col-7,.col-8{grid-column:span 12}
+  .specs-grid{grid-template-columns:repeat(2,1fr)}
+  .steps,.features,.quotes,.plans{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .identify-grid{grid-template-columns:repeat(2,1fr)}
+  .preachat{grid-template-columns:1fr}
+  .plan.featured{order:-1}
+}
+@media (max-width:760px){
+  .nav-links{
+    display:none;position:absolute;top:68px;left:0;right:0;
+    flex-direction:column;align-items:stretch;gap:0;padding:12px 24px 20px;
+    background:rgba(8,8,12,.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--line);
+  }
+  .nav-links.open{display:flex}
+  .nav-links a{min-height:48px}
+  .burger{display:inline-flex}
+  .nav .btn-primary{display:none}
+  .analyzer-row{flex-direction:column}
+  .analyzer-row .btn{width:100%}
+  .identify-grid{grid-template-columns:1fr}
+  .report-head{flex-direction:column;align-items:flex-start}
+  .report-price{text-align:left}
+  .tile-row{grid-template-columns:1fr}
+  section{padding:var(--space-6) 0}
+}
+@media (max-width:430px){
+  .stats-grid{grid-template-columns:1fr 1fr;gap:var(--space-3)}
+  .specs-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Aller au contenu principal</a>
+
+<div class="ambient" aria-hidden="true">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+</div>
+
+<!-- ============ NAV ============ -->
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="#" aria-label="Trust Drive — accueil">
+      <svg width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <path d="M16 2 4 7v8c0 8 5.2 13.2 12 15 6.8-1.8 12-7 12-15V7L16 2Z" stroke="#9DA9FF" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M10 16.5 14 20l8-8" stroke="#4ADE80" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Trust Drive
+    </a>
+    <nav aria-label="Navigation principale">
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#analyse">Analyse</a></li>
+        <li><a href="#fonctionnement">Fonctionnement</a></li>
+        <li><a href="#fonctionnalites">Fonctionnalités</a></li>
+        <li><a href="#tarifs">Tarifs</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+    </nav>
+    <div style="display:flex;gap:10px;align-items:center">
+      <a class="btn btn-primary" href="#analyse">Analyser une annonce</a>
+      <button class="burger" id="burger" aria-expanded="false" aria-controls="navLinks" aria-label="Ouvrir le menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- ============ HERO + ANALYZER ============ -->
+<section class="hero" id="analyse">
+  <div class="wrap">
+    <span class="eyebrow">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 3 7v6c0 5 3.8 9.4 9 11 5.2-1.6 9-6 9-11V7l-9-5Z"/></svg>
+      Copilote d'achat auto
+    </span>
+    <h1>La bonne affaire, ou l'arnaque&nbsp;? <em>Sachez-le avant d'y aller.</em></h1>
+    <p class="hero-sub">Collez le lien d'une annonce <strong>Le bon coin</strong> — Trust Drive identifie le véhicule, calcule sa <strong>cote réelle</strong>, liste les <strong>défauts connus de sa motorisation</strong> et chiffre votre marge de négociation.</p>
+
+    <form class="analyzer" id="analyzerForm" novalidate>
+      <label class="analyzer-label" for="urlInput">Lien de l'annonce Le bon coin</label>
+      <div class="analyzer-row">
+        <input type="url" id="urlInput" name="url" inputmode="url" autocomplete="off" spellcheck="false"
+               placeholder="https://www.leboncoin.fr/ad/voitures/…">
+        <button type="submit" class="btn btn-primary" id="analyzeBtn">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          Analyser
+        </button>
+      </div>
+      <p class="field-error" id="urlError" role="alert">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Collez un lien d'annonce valide — par exemple&nbsp;: https://www.leboncoin.fr/ad/voitures/2837465123
+      </p>
+
+      <div class="demo-chips" role="group" aria-label="Annonces d'exemple">
+        <span class="demo-chips-label">Essayez&nbsp;:</span>
+        <button type="button" class="chip" data-demo="golf">Golf GTI 2019</button>
+        <button type="button" class="chip" data-demo="lambo">Huracán 2017</button>
+        <button type="button" class="chip" data-demo="clio">Clio V 2021</button>
+        <button type="button" class="chip" data-demo="bmw">320d 2016</button>
+        <button type="button" class="chip" data-demo="p208">208 2020</button>
+      </div>
+
+      <!-- Identification du véhicule -->
+      <div class="identify" id="identifyPanel" hidden>
+        <p class="identify-msg" id="identifyMsg"></p>
+        <div class="identify-grid">
+          <div class="fld"><label for="selBrand">Marque</label><select id="selBrand"></select></div>
+          <div class="fld"><label for="selModel">Modèle</label><select id="selModel"></select></div>
+          <div class="fld"><label for="selEngine">Motorisation</label><select id="selEngine"></select></div>
+          <div class="fld"><label for="selPower">Puissance</label><select id="selPower"></select></div>
+          <div class="fld"><label for="selBox">Boîte de vitesses</label><select id="selBox"></select></div>
+          <div class="fld"><label for="selYear">Année</label><select id="selYear"></select></div>
+          <div class="fld"><label for="inpKm">Kilométrage</label><input id="inpKm" type="number" inputmode="numeric" min="0" step="500" placeholder="ex. 78 500"></div>
+          <div class="fld"><label for="inpPrice">Prix affiché (€)</label><input id="inpPrice" type="number" inputmode="numeric" min="100" step="50" placeholder="ex. 20 990"></div>
+        </div>
+        <p class="field-error" id="identError" role="alert">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Renseignez l'année, le kilométrage et le prix affiché pour lancer l'analyse.
+        </p>
+        <div class="paste-zone">
+          <label for="pasteInput">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Extraction express : collez le texte de l'annonce
+          </label>
+          <textarea id="pasteInput" placeholder="Sur la page Le bon coin : Ctrl+A puis Ctrl+C, et collez tout ici — TrustDrive extrait modèle, année, kilométrage, prix, boîte et carburant automatiquement."></textarea>
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px">
+            <button type="button" class="btn btn-ghost" id="extractBtn" style="min-height:42px;font-size:14px">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 3 14h7l-1 8 11-13h-7l.5-7Z"/></svg>
+              Extraire les données
+            </button>
+            <span class="hint">Fonctionne à tous les coups — aucune donnée ne quitte votre navigateur.</span>
+          </div>
+        </div>
+        <p class="extract-status" id="extractStatus" role="status" aria-live="polite"></p>
+        <div class="identify-actions">
+          <button type="button" class="btn btn-primary" id="runBtn">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 3 14h7l-1 8 11-13h-7l.5-7Z"/></svg>
+            Lancer l'analyse
+          </button>
+          <span style="font-size:12.5px;color:var(--ink-3)">Base couverte&nbsp;: <span id="coverageNote">—</span></span>
+        </div>
+      </div>
+
+      <div class="scan" id="scanPanel" role="status" aria-live="polite">
+        <div class="scan-step" data-step="1"><span class="dot"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span>Identification du véhicule…</div>
+        <div class="scan-step" data-step="2"><span class="dot"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span>Calcul de la cote (décote segment + kilométrage)…</div>
+        <div class="scan-step" data-step="3"><span class="dot"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span>Croisement avec les défauts connus de la motorisation…</div>
+        <div class="scan-step" data-step="4"><span class="dot"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span>Détection d'anomalies (prix, kilométrage, cohérence)…</div>
+      </div>
+
+      <p class="demo-note">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <span>TrustDrive tente d'abord de <strong>lire l'annonce automatiquement</strong>. Si Le bon coin bloque les robots (fréquent), l'extraction express prend le relais&nbsp;: collez le texte de l'annonce et tout est extrait localement — rien ne quitte votre navigateur. Cotes et budgets sont des <strong>estimations</strong> calculées par notre base embarquée.</span>
+      </p>
+    </form>
+
+    <div class="hero-markers">
+      <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Gratuit, sans inscription</span>
+      <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Défauts connus documentés par motorisation</span>
+      <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Aucune donnée revendue</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RAPPORT ============ -->
+<section id="rapport" aria-label="Rapport d'analyse">
+  <div class="wrap">
+    <div class="report-head">
+      <div class="report-title">
+        <span class="eyebrow" style="margin-bottom:14px">Rapport d'analyse</span>
+        <h2 id="carTitle" tabindex="-1">—</h2>
+        <p class="car-sub" id="carSub">—</p>
+      </div>
+      <div class="report-price">
+        <div class="amount" id="carPrice">—</div>
+        <div class="src">prix affiché sur l'annonce</div>
+        <div style="margin-top:10px"><span class="verdict-pill" id="verdictPill"></span></div>
+      </div>
+    </div>
+
+    <div class="report-grid">
+      <!-- Score -->
+      <div class="card col-4 gauge-card">
+        <h3 style="align-self:flex-start">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 3 7v6c0 5 3.8 9.4 9 11 5.2-1.6 9-6 9-11V7l-9-5Z"/></svg>
+          Indice de confiance
+        </h3>
+        <div class="gauge-wrap">
+          <svg width="190" height="190" viewBox="0 0 190 190" role="img" aria-labelledby="gaugeDesc">
+            <desc id="gaugeDesc">Jauge de l'indice de confiance sur 100.</desc>
+            <circle class="gauge-track" cx="95" cy="95" r="80" stroke-dasharray="377 502.6"/>
+            <circle class="gauge-fill" id="gaugeFill" cx="95" cy="95" r="80" stroke-dasharray="0 502.6"/>
+          </svg>
+          <div class="gauge-center">
+            <div class="gauge-score" id="gaugeScore">0</div>
+            <div class="gauge-max">/ 100</div>
+          </div>
+        </div>
+        <div class="gauge-bands" aria-hidden="true">
+          <span><span class="band-dot" style="background:var(--bad)"></span>&lt; 55 prudence</span>
+          <span><span class="band-dot" style="background:var(--warn)"></span>55–74 correct</span>
+          <span><span class="band-dot" style="background:var(--good)"></span>≥ 75 bonne affaire</span>
+        </div>
+      </div>
+
+      <!-- Prix vs marché -->
+      <div class="card col-8">
+        <h3>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 13 4-4 4 3 5-6"/></svg>
+          Prix vs cote estimée
+        </h3>
+        <div class="price-labels">
+          <span id="priceMin">—</span>
+          <span id="priceMax">—</span>
+        </div>
+        <div class="price-track" role="img" id="priceTrackImg" aria-label="">
+          <span class="price-median" id="priceMedian"></span>
+          <span class="price-marker" id="priceMarker" data-label="—"></span>
+        </div>
+        <p style="font-size:12.5px;color:var(--ink-3)" id="priceSample">—</p>
+        <div class="price-delta">
+          <span class="delta-badge" id="deltaBadge">—</span>
+          <p id="deltaText">—</p>
+        </div>
+      </div>
+
+      <!-- Specs -->
+      <div class="card col-12">
+        <h3>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg>
+          Fiche du véhicule
+        </h3>
+        <div class="specs-grid" id="specsGrid"></div>
+      </div>
+
+      <!-- Flags -->
+      <div class="card col-6">
+        <h3>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+          Points forts
+        </h3>
+        <ul class="flag-list" id="goodFlags"></ul>
+      </div>
+      <div class="card col-6">
+        <h3>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg>
+          Points de vigilance
+        </h3>
+        <ul class="flag-list" id="badFlags"></ul>
+      </div>
+
+      <!-- Décote -->
+      <div class="card col-5">
+        <h3>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 17-7.5-7.5L10 14 2 6"/><path d="M16 17h6v-6"/></svg>
+          Décote estimée
+        </h3>
+        <div class="spark-head">
+          <span class="spark-value" id="decoteValue">—</span>
+          <span class="spark-caption">valeur estimée depuis la 1<sup>re</sup> mise en circulation</span>
+        </div>
+        <svg class="sparkline" id="sparkline" viewBox="0 0 320 76" preserveAspectRatio="none" role="img" aria-labelledby="sparkDesc">
+          <desc id="sparkDesc">Courbe de la valeur estimée du véhicule au fil des années.</desc>
+          <defs>
+            <linearGradient id="sparkfill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#5B6CF0" stop-opacity=".35"/>
+              <stop offset="100%" stop-color="#5B6CF0" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <path class="area" id="sparkArea" d=""/>
+          <path class="line" id="sparkLine" d=""/>
+          <circle class="pt" id="sparkPt" r="4" cx="0" cy="0"/>
+        </svg>
+        <div class="spark-axis"><span id="sparkFrom">—</span><span>aujourd'hui</span></div>
+      </div>
+
+      <!-- Budget -->
+      <div class="card col-7">
+        <h3>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>
+          Budget d'usage estimé
+        </h3>
+        <div class="tile-row">
+          <div class="tile"><div class="t-label">Entretien</div><div class="t-value" id="costMaint">—</div></div>
+          <div class="tile"><div class="t-label">Assurance (tous risques)</div><div class="t-value" id="costInsur">—</div></div>
+          <div class="tile"><div class="t-label">Consommation mixte</div><div class="t-value" id="costConso">—</div></div>
+        </div>
+        <p style="font-size:12.5px;color:var(--ink-3);margin-top:14px" id="budgetNote">Estimations moyennes pour un conducteur 35&nbsp;ans, bonus 50&nbsp;%, 12&nbsp;000&nbsp;km/an.</p>
+      </div>
+
+      <!-- Avant d'acheter -->
+      <div class="card col-12">
+        <h3>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11h6M9 15h4"/><path d="M9 3h6l1 2h3a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h3l1-2Z"/></svg>
+          Avant d'acheter — contre-visite guidée
+        </h3>
+        <div class="preachat">
+          <div>
+            <h4>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+              À vérifier sur place
+            </h4>
+            <ul class="flag-list" id="checkList"></ul>
+          </div>
+          <div>
+            <h4>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2Z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/></svg>
+              Questions au vendeur
+            </h4>
+            <ul class="flag-list" id="askList"></ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Négociation -->
+      <div class="card col-12">
+        <h3>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2Z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/></svg>
+          Stratégie de négociation
+        </h3>
+        <div id="negoBody">
+          <div class="nego-offer">
+            <span class="lbl">Offre conseillée&nbsp;:</span>
+            <span class="range" id="negoRange">—</span>
+          </div>
+          <ul class="nego-args" id="negoArgs"></ul>
+          <div style="display:flex;align-items:center;flex-wrap:wrap">
+            <button type="button" class="btn btn-ghost" id="copyNego">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copier le message pour le vendeur
+            </button>
+            <span class="copy-feedback" id="copyFeedback" role="status">Message copié&nbsp;!</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Verdict -->
+    <div class="verdict-banner" id="verdictBanner">
+      <div class="vb-icon" id="verdictIcon"></div>
+      <div>
+        <h3 id="verdictTitle">—</h3>
+        <p id="verdictText">—</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STATS ============ -->
+<div class="stats-band reveal">
+  <div class="wrap">
+    <div class="stats-grid">
+      <div><div class="stat-num" id="statBrands" data-count="0">0</div><div class="stat-label">marques couvertes</div></div>
+      <div><div class="stat-num" id="statModels" data-count="0">0</div><div class="stat-label">modèles référencés</div></div>
+      <div><div class="stat-num" id="statEngines" data-count="0">0</div><div class="stat-label">motorisations référencées (déclinaisons réelles)</div></div>
+      <div><div class="stat-num" id="statChecks" data-count="0">0</div><div class="stat-label">défauts connus &amp; points de contrôle</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ FONCTIONNEMENT ============ -->
+<section id="fonctionnement">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Fonctionnement</span>
+      <h2>Trois étapes. Zéro mauvaise surprise.</h2>
+      <p>Pas de formulaire interminable, pas de jargon mécanique. Vous collez un lien, on fait le reste.</p>
+    </div>
+    <div class="steps">
+      <div class="step-card reveal">
+        <span class="step-num">01</span>
+        <h3>
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>
+          Collez le lien
+        </h3>
+        <p>TrustDrive ouvre l'annonce et extrait tout ce qu'il peut&nbsp;: modèle, année, kilométrage, prix, boîte, carburant. Si Le bon coin bloque les robots, collez simplement le texte de la page — l'extraction express fait le reste.</p>
+      </div>
+      <div class="step-card reveal">
+        <span class="step-num">02</span>
+        <h3>
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg>
+          Le moteur décortique
+        </h3>
+        <p>Cote calculée (décote du segment, kilométrage, énergie), défauts connus de la motorisation avec coûts réels, cohérence prix/km, restrictions ZFE&nbsp;: chaque facteur est chiffré.</p>
+      </div>
+      <div class="step-card reveal">
+        <span class="step-num">03</span>
+        <h3>
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 3 7v6c0 5 3.8 9.4 9 11 5.2-1.6 9-6 9-11V7l-9-5Z"/><path d="m9 12 2 2 4-4"/></svg>
+          Décidez en confiance
+        </h3>
+        <p>Un indice de confiance construit facteur par facteur, une contre-visite guidée, les questions à poser au vendeur et une offre de négociation argumentée. Foncez, négociez, ou passez.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FONCTIONNALITÉS ============ -->
+<section id="fonctionnalites">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Ce que Trust Drive vérifie</span>
+      <h2>Tout ce qu'un ami mécano regarderait. Et plus.</h2>
+      <p>Chaque rapport croise le prix demandé avec la cote calculée et le dossier fiabilité documenté de la motorisation.</p>
+    </div>
+    <div class="features">
+      <div class="feature reveal">
+        <div class="feature-icon"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 13 4-4 4 3 5-6"/></svg></div>
+        <h3>Cote calculée, pas devinée</h3>
+        <p>Prix neuf du modèle, courbe de décote de son segment, correction kilométrage&nbsp;: la cote est reconstruite pour VOTRE exemplaire, pas copiée d'un barème générique.</p>
+      </div>
+      <div class="feature reveal">
+        <div class="feature-icon"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4"/><circle cx="12" cy="12" r="3"/></svg></div>
+        <h3>Défauts connus documentés</h3>
+        <p>Courroie humide PureTech, chaîne N47, mécatronique DSG7, embrayage e-gear… chaque famille moteur et boîte a son dossier&nbsp;: symptômes, fenêtre kilométrique, coût de remise en état.</p>
+      </div>
+      <div class="feature reveal">
+        <div class="feature-icon"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg></div>
+        <h3>Détection d'anomalies</h3>
+        <p>Prix anormalement bas pour l'année et le kilométrage, compteur incohérent avec l'âge&nbsp;: les signaux typiques des annonces frauduleuses déclenchent une alerte explicite.</p>
+      </div>
+      <div class="feature reveal">
+        <div class="feature-icon"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg></div>
+        <h3>Coût d'usage complet</h3>
+        <p>Entretien selon la gamme et l'âge, assurance selon la puissance, consommation réelle de la motorisation, décote annuelle&nbsp;: le vrai budget, pas seulement le prix d'achat.</p>
+      </div>
+      <div class="feature reveal">
+        <div class="feature-icon"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11h6M9 15h4"/><path d="M9 3h6l1 2h3a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h3l1-2Z"/></svg></div>
+        <h3>Contre-visite guidée</h3>
+        <p>Quoi écouter moteur froid, quelle jauge contrôler, quelles factures exiger, quelles questions poser&nbsp;: une checklist personnalisée selon les faiblesses connues du véhicule.</p>
+      </div>
+      <div class="feature reveal">
+        <div class="feature-icon"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2Z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/></svg></div>
+        <h3>Aide à la négociation</h3>
+        <p>Une fourchette d'offre calculée depuis la cote et les frais à prévoir, plus un message prêt à envoyer au vendeur — poli, ferme, appuyé sur des chiffres.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TÉMOIGNAGES ============ -->
+<section aria-label="Témoignages">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Ils ont évité le piège</span>
+      <h2>Le bon prix, les bonnes questions, zéro stress</h2>
+    </div>
+    <div class="quotes">
+      <div class="quote reveal">
+        <blockquote>«&nbsp;Le rapport a repéré que la courroie humide n'avait jamais été remplacée. <strong>J'ai négocié 900&nbsp;€ de moins</strong> avec la facture d'entretien sous les yeux du vendeur.&nbsp;»</blockquote>
+        <div class="quote-author">
+          <span class="avatar" style="background:#3B4CC0" aria-hidden="true">SM</span>
+          <div class="who"><b>Sarah M.</b><span>208 PureTech achetée à Lyon</span></div>
+        </div>
+      </div>
+      <div class="quote reveal">
+        <blockquote>«&nbsp;Une 320d à 9&nbsp;800&nbsp;€, trop belle pour être vraie. Trust Drive a signalé <strong>un prix 32&nbsp;% sous la cote</strong>&nbsp;: annonce frauduleuse, confirmée deux jours après.&nbsp;»</blockquote>
+        <div class="quote-author">
+          <span class="avatar" style="background:#7C3AED" aria-hidden="true">KD</span>
+          <div class="who"><b>Karim D.</b><span>acheteur prudent, Bordeaux</span></div>
+        </div>
+      </div>
+      <div class="quote reveal">
+        <blockquote>«&nbsp;Je ne connais rien aux voitures. Le verdict est limpide&nbsp;: <strong>foncez, négociez, ou fuyez</strong>. J'ai acheté ma Clio au juste prix sans stress.&nbsp;»</blockquote>
+        <div class="quote-author">
+          <span class="avatar" style="background:#0E7490" aria-hidden="true">LB</span>
+          <div class="who"><b>Léa B.</b><span>première voiture, Nantes</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TARIFS ============ -->
+<section id="tarifs">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Tarifs</span>
+      <h2>Transparent, comme nos rapports.</h2>
+      <p>Pas de frais cachés, pas d'engagement. Résiliable en deux clics.</p>
+    </div>
+    <div class="plans">
+      <div class="plan reveal">
+        <h3>Découverte</h3>
+        <div class="price">0&nbsp;€<span class="per"> / pour toujours</span></div>
+        <p class="plan-desc">Pour un achat ponctuel.</p>
+        <ul>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>3 analyses par semaine</li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Indice de confiance &amp; verdict</li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Cote calculée &amp; défauts connus</li>
+        </ul>
+        <a href="#analyse" class="btn btn-ghost">Commencer gratuitement</a>
+      </div>
+      <div class="plan featured reveal">
+        <span class="plan-badge">Le plus choisi</span>
+        <h3>Acheteur</h3>
+        <div class="price">4,99&nbsp;€<span class="per"> / mois</span></div>
+        <p class="plan-desc">Analyses illimitées, résiliable en deux clics.</p>
+        <ul>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Analyses illimitées</li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Rapport complet&nbsp;: fiabilité, budget, décote</li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Alertes baisse de prix sur vos favoris</li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Messages de négociation personnalisés</li>
+        </ul>
+        <a href="#analyse" class="btn btn-primary">Essayer 7 jours offerts</a>
+      </div>
+      <div class="plan reveal">
+        <h3>Pro &amp; garages</h3>
+        <div class="price">49&nbsp;€<span class="per"> / mois</span></div>
+        <p class="plan-desc">Pour sourcer des véhicules toute l'année.</p>
+        <ul>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Tout le plan Acheteur</li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>API &amp; export des rapports</li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Veille automatique multi-critères</li>
+        </ul>
+        <a href="#analyse" class="btn btn-ghost">Contacter l'équipe</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">FAQ</span>
+      <h2>Les questions qu'on nous pose</h2>
+    </div>
+    <div class="faq reveal">
+      <details>
+        <summary>Comment TrustDrive lit-il l'annonce&nbsp;? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></summary>
+        <div class="faq-body">En trois étages. 1)&nbsp;TrustDrive tente d'ouvrir l'annonce et d'en extraire les données automatiquement (titre, prix, année, kilométrage, boîte, carburant). 2)&nbsp;Si Le bon coin bloque les robots — sa protection anti-bot est agressive — l'extraction express prend le relais&nbsp;: vous copiez le texte de la page (Ctrl+A, Ctrl+C) et TrustDrive extrait tout localement, sans que rien ne quitte votre navigateur. 3)&nbsp;En dernier recours, quatre champs suffisent. Jamais d'invention&nbsp;: ce qui n'est pas lu vous est demandé.</div>
+      </details>
+      <details>
+        <summary>D'où viennent les défauts connus et les cotes&nbsp;? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></summary>
+        <div class="faq-body">Les défauts par famille moteur proviennent des rappels constructeurs, bulletins techniques et retours d'ateliers documentés (courroie humide PureTech, chaîne N47, mécatronique DSG7…). Les cotes sont reconstruites à partir du prix neuf du modèle et de courbes de décote par segment, corrigées du kilométrage — ce sont des estimations, affichées comme telles.</div>
+      </details>
+      <details>
+        <summary>Trust Drive est-il affilié à Le bon coin&nbsp;? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></summary>
+        <div class="faq-body">Non. Trust Drive est un service indépendant, sans lien avec leboncoin.fr. Nous analysons les annonces que <em>vous</em> nous soumettez, dans votre seul intérêt d'acheteur.</div>
+      </details>
+      <details>
+        <summary>Le rapport remplace-t-il une inspection mécanique&nbsp;? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></summary>
+        <div class="faq-body">Non — et méfiez-vous de qui prétend le contraire. Trust Drive vous dit si une annonce mérite le déplacement, quoi vérifier sur place et quoi demander au vendeur. Pour un achat important, un essai routier et un contrôle par un professionnel restent indispensables.</div>
+      </details>
+      <details>
+        <summary>Mes recherches sont-elles revendues&nbsp;? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></summary>
+        <div class="faq-body">Jamais. Ni aux vendeurs, ni aux concessions, ni aux assureurs. Notre modèle économique repose sur l'abonnement, pas sur vos données.</div>
+      </details>
+      <details>
+        <summary>Quels véhicules sont couverts&nbsp;? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></summary>
+        <div class="faq-body">La base couvre les modèles les plus vendus en France — des citadines aux SUV — ainsi que les sportives et exotiques (Porsche, Ferrari, Lamborghini, McLaren…). Elle s'enrichit en continu&nbsp;; si votre modèle n'y figure pas encore, le site vous le dit franchement au lieu d'improviser.</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA FINAL ============ -->
+<section class="final-cta">
+  <div class="wrap reveal">
+    <h2>Votre prochaine voiture mérite mieux qu'un coup de poker.</h2>
+    <p>Collez une annonce. Dans quelques secondes, vous saurez.</p>
+    <a class="btn btn-primary" href="#analyse" style="min-height:54px;padding:0 32px;font-size:16px">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      Analyser une annonce gratuitement
+    </a>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="wrap footer-inner">
+    <div>
+      <a class="brand" href="#" aria-label="Trust Drive — accueil">
+        <svg width="24" height="24" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <path d="M16 2 4 7v8c0 8 5.2 13.2 12 15 6.8-1.8 12-7 12-15V7L16 2Z" stroke="#9DA9FF" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M10 16.5 14 20l8-8" stroke="#4ADE80" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Trust Drive
+      </a>
+      <p class="disclaimer" style="margin-top:14px">Service indépendant, non affilié à leboncoin.fr. Cotes, budgets et scores sont des estimations calculées à partir d'une base de connaissances documentée&nbsp;: ils éclairent votre décision mais ne remplacent ni une expertise mécanique ni un historique officiel (Histovec).</p>
+    </div>
+    <nav aria-label="Liens de pied de page">
+      <ul>
+        <li><a href="#analyse">Analyse</a></li>
+        <li><a href="#tarifs">Tarifs</a></li>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a href="#">Mentions légales</a></li>
+        <li><a href="#">Confidentialité</a></li>
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+<script src="db.js"></script>
+<script>
+'use strict';
+/* ============================================================
+   TRUST DRIVE — MOTEUR D'ANALYSE
+   Identification depuis le lien → confirmation guidée →
+   cote calculée, score facteur par facteur, rapport complet.
+   ============================================================ */
+const $ = (id) => document.getElementById(id);
+const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const YEAR_NOW = new Date().getFullYear();
+const euro = (n) => Math.round(n).toLocaleString('fr-FR') + ' €';
+const round50 = (n) => Math.round(n / 50) * 50;
+const escapeHtml = (s) => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+const BRANDS_SORTED = [...BRANDS].sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+
+/* ---------- Statistiques réelles de la base ---------- */
+(function initStats() {
+  const models = BRANDS.reduce((n, b) => n + b.models.length, 0);
+  const motorisations = countMotorisations();
+  let checks = 0;
+  for (const e of Object.values(ENGINES)) for (const i of e.issues) checks += 1 + (i.chk ? 1 : 0) + (i.ask ? 1 : 0);
+  for (const g of Object.values(GEARBOXES)) for (const i of g.issues) checks += 1 + (i.chk ? 1 : 0) + (i.ask ? 1 : 0);
+  $('statBrands').dataset.count = BRANDS.length;
+  $('statModels').dataset.count = models;
+  $('statEngines').dataset.count = motorisations;
+  $('statChecks').dataset.count = checks;
+  $('coverageNote').textContent = `${BRANDS.length} marques · ${models.toLocaleString('fr-FR')} modèles · ${motorisations.toLocaleString('fr-FR')} motorisations`;
+})();
+
+/* ---------- Détection du véhicule (URL ou texte d'annonce) ---------- */
+function normText(raw) {
+  let s; try { s = decodeURIComponent(raw); } catch { s = raw; }
+  return ' ' + s.toLowerCase().replace(/ /g, ' ').replace(/[-_+.,/?=&#|;:!()'"«»]/g, ' ').replace(/\s+/g, ' ') + ' ';
+}
+const bound = (a) => new RegExp('(^|[^0-9a-zà-ÿ])' + a.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '($|[^0-9a-zà-ÿ])');
+function detectVehicle(raw, title, yearHint) {
+  const s = normText(raw);
+  const tz = title ? normText(title) : s.slice(0, 320);
+  const found = { brand: null, model: null, year: null, km: null };
+  let bBest = null;
+  for (const b of BRANDS) {
+    for (const a of b.alias) {
+      if (!bound(a).test(s)) continue;
+      const sc = a.length * 10 + (bound(a).test(tz) ? 30 : 0);
+      if (!bBest || sc > bBest.sc) bBest = { b, sc };
+    }
+  }
+  if (bBest) found.brand = bBest.b;
+  if (yearHint) found.year = yearHint;
+  else {
+    const ym = s.match(/(^|\s)(19[5-9]\d|20[0-2]\d)(\s|$)/);
+    if (ym) found.year = parseInt(ym[2], 10);
+  }
+  const pool = found.brand ? [found.brand] : BRANDS;
+  let best = null;
+  for (const b of pool) {
+    const shared = {};
+    for (const m of b.models) for (const a of m.alias) shared[a] = (shared[a] || 0) + 1;
+    for (const m of b.models) {
+      for (const a of m.alias) {
+        if (!bound(a).test(s)) continue;
+        let sc = a.length * 10;
+        if (shared[a] === 1) sc += 15;
+        if (bound(a).test(tz)) sc += 30;
+        if (found.year && found.year >= m.y[0] && found.year <= m.y[1]) sc += 100;
+        if (!best || sc > best.sc) best = { b, m, sc };
+      }
+    }
+  }
+  if (best) { found.brand = best.b; found.model = best.m; }
+  const kmm = s.match(/(\d{2,3})\s?000\s?km/);
+  if (kmm) found.km = parseInt(kmm[1], 10) * 1000;
+  return found;
+}
+function detectFromUrl(url) { return detectVehicle(url); }
+
+/* ---------- Lecture automatique de l'annonce ----------
+   1) tentative via relais CORS publics (fonctionne quand la
+      protection anti-robot de leboncoin laisse passer)
+   2) analyse du JSON __NEXT_DATA__ embarqué dans la page
+   3) repli infaillible : l'utilisateur colle le texte de
+      l'annonce, tout est extrait localement.               */
+const PROXIES = [
+  u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
+  u => 'https://corsproxy.io/?url=' + encodeURIComponent(u)
+];
+async function fetchListing(url) {
+  for (const wrap of PROXIES) {
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 9000);
+      const res = await fetch(wrap(url), { signal: ctrl.signal });
+      clearTimeout(timer);
+      if (!res.ok) continue;
+      const html = await res.text();
+      if (html.length < 20000 && /datadome|captcha/i.test(html)) continue;
+      const data = parseListingHTML(html);
+      if (data && (data.price || data.km || data.year)) return data;
+    } catch { /* relais suivant */ }
+  }
+  return null;
+}
+function parseListingHTML(html) {
+  const nd = html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
+  if (nd) {
+    try {
+      const j = JSON.parse(nd[1]);
+      const ad = (j.props && j.props.pageProps && (j.props.pageProps.ad || j.props.pageProps.adview)) || null;
+      if (ad) {
+        const attrs = {};
+        (ad.attributes || []).forEach(a => { attrs[a.key] = a.value_label || a.value; });
+        const rawPrice = Array.isArray(ad.price) ? ad.price[0] : (ad.price && ad.price.value != null ? ad.price.value : ad.price);
+        return {
+          title: ad.subject || '',
+          price: Number(rawPrice) || null,
+          year: parseInt(attrs.regdate, 10) || null,
+          km: parseInt(String(attrs.mileage || '').replace(/\D/g, ''), 10) || null,
+          fuel: attrs.fuel || null,
+          gearbox: attrs.gearbox || null,
+          power: parseInt(attrs.horse_power_din || attrs.horsepower, 10) || null,
+          raw: (ad.subject || '') + ' ' + (ad.body || '')
+        };
+      }
+    } catch { /* structure inattendue : repli texte */ }
+  }
+  const title = (html.match(/<title>([^<]{5,160})/) || [])[1] || '';
+  const text = html.replace(/<script[\s\S]*?<\/script>/g, ' ').replace(/<style[\s\S]*?<\/style>/g, ' ').replace(/<[^>]+>/g, ' ');
+  return parseListingText(title + ' ' + text, title);
+}
+function parseListingText(text, title) {
+  const t = ' ' + String(text).replace(/ /g, ' ').replace(/\s+/g, ' ') + ' ';
+  const num = (x) => x != null ? parseInt(String(x).replace(/[^\d]/g, ''), 10) : null;
+  let year = null, m1;
+  m1 = t.match(/ann[ée]e[\s-]*mod[èe]le\s*:?\s*((?:19|20)\d{2})/i) || t.match(/mise en circulation\s*:?\s*(?:\d{1,2}\/)?((?:19|20)\d{2})/i);
+  if (m1) year = +m1[1];
+  else { m1 = t.match(/(^|[^\d])((?:19[5-9]|20[0-2])\d)([^\d]|$)/); if (m1) year = +m1[2]; }
+  let km = null;
+  m1 = t.match(/kilom[ée]trage\s*:?\s*([\d\s.,]{2,12})\s*km/i) || t.match(/(\d{1,3}(?:[\s.]\d{3})+)\s*km(?![\/\w])/i) || t.match(/(\d{4,6})\s*km(?![\/\w])/i);
+  if (m1) km = num(m1[1]);
+  let price = null;
+  for (const mm of t.matchAll(/(\d{1,3}(?:[\s.]\d{3})+|\d{3,7})\s*(?:€|euros?)/gi)) {
+    const v = num(mm[1]);
+    if (v >= 300 && v <= 3000000) { price = v; break; }
+  }
+  let gearbox = null;
+  m1 = t.match(/bo[îi]te(?:\s+de\s+vitesses?)?\s*:?\s*(automatique|manuelle)/i) || t.match(/\b(automatique|manuelle)\b/i);
+  if (m1) gearbox = m1[1];
+  let fuel = null;
+  m1 = t.match(/carburant\s*:?\s*(essence|diesel|hybride|[ée]lectrique|gpl)/i) || t.match(/\b(essence|diesel|hybride|[ée]lectrique)\b/i);
+  if (m1) fuel = m1[1];
+  let power = null;
+  m1 = t.match(/puissance\s*(?:din|r[ée]elle)?\s*:?\s*(\d{2,4})\s*ch/i) || t.match(/\b(\d{2,3})\s*ch\b/);
+  if (m1) power = +m1[1];
+  return { title: title || '', price, year, km, fuel, gearbox, power, raw: t.slice(0, 8000) };
+}
+const ICO_SEARCH = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>';
+function applyExtracted(d, sourceMsg) {
+  const det = detectVehicle((d.title || '') + ' ' + (d.raw || ''), d.title, d.year || null);
+  if (d.year) det.year = d.year;
+  if (d.km != null && d.km >= 0) det.km = d.km;
+  fillBrands(det.brand || undefined);
+  fillModels(det.brand || currentBrand(), det.model || undefined);
+  fillEngines(currentModel());
+  let cand = currentModel().eng.map((e, i) => ({ e, i }));
+  if (d.fuel) {
+    const F = /diesel/i.test(d.fuel) ? 'Diesel' : /hybride/i.test(d.fuel) ? 'Hybride' : /lectrique/i.test(d.fuel) ? 'Électrique' : 'Essence';
+    const filtered = cand.filter(c => ENGINES[c.e.ref].fuel === F);
+    if (filtered.length) cand = filtered;
+  }
+  if (d.power) cand = [...cand].sort((a, b) => Math.abs(a.e.p - d.power) - Math.abs(b.e.p - d.power));
+  if (d.fuel || d.power) selEngine.value = String(cand[0].i);
+  fillPowers(d.power || undefined);
+  fillBoxes(baseEngine());
+  if (d.gearbox && selBox.querySelector('option[value="' + (/auto/i.test(d.gearbox) ? 'a' : 'm') + '"]')) {
+    selBox.value = /auto/i.test(d.gearbox) ? 'a' : 'm';
+  }
+  fillYears(currentModel(), det.year && det.year >= currentModel().y[0] && det.year <= currentModel().y[1] ? det.year : undefined);
+  if (det.km != null) inpKm.value = det.km;
+  if (d.price) inpPrice.value = d.price;
+  $('identifyPanel').hidden = false;
+  const parts = [];
+  if (det.brand && det.model) parts.push(det.brand.name + ' ' + det.model.name);
+  if (det.year) parts.push(String(det.year));
+  if (det.km != null) parts.push(det.km.toLocaleString('fr-FR') + ' km');
+  if (d.price) parts.push(euro(d.price));
+  $('identifyMsg').innerHTML = ICO_SEARCH + '<span>' + sourceMsg + (parts.length ? '&nbsp;: <strong>' + escapeHtml(parts.join(' · ')) + '</strong>' : '') + '</span>';
+  const complete = !!(det.brand && det.model && det.year && det.km != null && d.price);
+  if (complete) {
+    runAnalysis({ brand: det.brand, model: det.model, eng: currentEngine(), box: selBox.value, year: det.year, km: det.km, price: d.price });
+  } else {
+    $('identifyPanel').scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth', block: 'nearest' });
+    (!det.model ? selModel : (!det.year ? selYear : (det.km == null ? inpKm : inpPrice))).focus({ preventScroll: true });
+  }
+  return complete;
+}
+function setStatus(kind, html) {
+  const el = $('extractStatus');
+  if (kind === 'hide') { el.className = 'extract-status'; el.innerHTML = ''; return; }
+  el.className = 'extract-status visible' + (kind ? ' ' + kind : '');
+  el.innerHTML = (kind === '' ? '<span class="spin" aria-hidden="true"></span>' : '') + '<span>' + html + '</span>';
+}
+
+/* ---------- Panneau d'identification ---------- */
+const selBrand = $('selBrand'), selModel = $('selModel'), selEngine = $('selEngine'),
+      selPower = $('selPower'), selBox = $('selBox'), selYear = $('selYear'),
+      inpKm = $('inpKm'), inpPrice = $('inpPrice');
+
+function fillBrands(selected) {
+  selBrand.innerHTML = BRANDS_SORTED.map(b =>
+    `<option value="${escapeHtml(b.name)}"${selected === b ? ' selected' : ''}>${escapeHtml(b.name)}</option>`).join('');
+}
+function currentBrand() { return BRANDS_SORTED.find(b => b.name === selBrand.value) || BRANDS_SORTED[0]; }
+function fillModels(brand, selected) {
+  selModel.innerHTML = brand.models.map((m, i) =>
+    `<option value="${i}"${selected === m ? ' selected' : ''}>${escapeHtml(m.name)}</option>`).join('');
+}
+function currentModel() { return currentBrand().models[parseInt(selModel.value, 10) || 0]; }
+function fillEngines(model) {
+  selEngine.innerHTML = model.eng.map((e, i) =>
+    `<option value="${i}">${escapeHtml(ENGINES[e.ref].label)} — ${e.p} ch</option>`).join('');
+}
+function baseEngine() { return currentModel().eng[parseInt(selEngine.value, 10) || 0]; }
+function currentEngine() {
+  const e = baseEngine();
+  const p = parseInt(selPower.value, 10);
+  return p > 0 ? Object.assign({}, e, { p }) : e;
+}
+function fillPowers(preferred) {
+  const e = baseEngine();
+  const steps = powerStepsFor(currentModel(), e);
+  const target = preferred || e.p;
+  const def = steps.reduce((acc, p) => Math.abs(p - target) < Math.abs(acc - target) ? p : acc, steps[0]);
+  selPower.innerHTML = steps.map(p => `<option value="${p}"${p === def ? ' selected' : ''}>${p} ch</option>`).join('');
+}
+function fillBoxes(eng) {
+  const opts = [];
+  if (eng.box.includes('m')) opts.push('<option value="m">Manuelle</option>');
+  if (eng.box.includes('a')) opts.push(`<option value="a">Automatique${eng.abox ? ' (' + escapeHtml(GEARBOXES[eng.abox].label) + ')' : ''}</option>`);
+  selBox.innerHTML = opts.join('');
+  if (eng.box === 'a') selBox.value = 'a';
+}
+function fillYears(model, selected) {
+  const to = Math.min(model.y[1], YEAR_NOW), from = model.y[0], out = [];
+  for (let y = to; y >= from; y--) out.push(`<option value="${y}"${selected === y ? ' selected' : ''}>${y}</option>`);
+  selYear.innerHTML = out.join('');
+}
+selBrand.addEventListener('change', () => { fillModels(currentBrand()); fillEngines(currentModel()); fillPowers(); fillBoxes(baseEngine()); fillYears(currentModel()); });
+selModel.addEventListener('change', () => { fillEngines(currentModel()); fillPowers(); fillBoxes(baseEngine()); fillYears(currentModel()); });
+selEngine.addEventListener('change', () => { fillPowers(); fillBoxes(baseEngine()); });
+
+function openIdentify(found) {
+  const msg = $('identifyMsg');
+  const ico = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>';
+  if (found.brand && found.model) {
+    msg.innerHTML = ico + `<span>Véhicule détecté dans le lien&nbsp;: <strong>${escapeHtml(found.brand.name)} ${escapeHtml(found.model.name)}</strong>${found.year ? ' <strong>' + found.year + '</strong>' : ''}. Confirmez les détails, puis lancez l'analyse.</span>`;
+  } else if (found.brand) {
+    msg.innerHTML = ico + `<span>Marque détectée&nbsp;: <strong>${escapeHtml(found.brand.name)}</strong>. Le lien ne précise pas le modèle — sélectionnez-le ci-dessous.</span>`;
+  } else {
+    msg.innerHTML = ico + `<span>Ce lien ne contient qu'un identifiant d'annonce — aucune caractéristique. <strong>Précisez le véhicule</strong> en quatre champs&nbsp;: l'analyse fera le reste.</span>`;
+  }
+  fillBrands(found.brand || undefined);
+  fillModels(found.brand || currentBrand(), found.model || undefined);
+  fillEngines(currentModel());
+  fillPowers();
+  fillBoxes(baseEngine());
+  fillYears(currentModel(), found.year && found.year >= currentModel().y[0] && found.year <= currentModel().y[1] ? found.year : undefined);
+  if (found.km) inpKm.value = found.km;
+  $('identifyPanel').hidden = false;
+  $('identError').classList.remove('visible');
+  $('identifyPanel').scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth', block: 'nearest' });
+  (found.model ? (found.year ? inpKm : selYear) : selModel).focus({ preventScroll: true });
+}
+
+/* ---------- Formulaire URL ---------- */
+const form = $('analyzerForm'), input = $('urlInput'), urlError = $('urlError');
+let analyzing = false;
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const v = input.value.trim();
+  if (!v || !/leboncoin|https?:\/\//i.test(v)) {
+    urlError.classList.add('visible');
+    input.focus();
+    return;
+  }
+  urlError.classList.remove('visible');
+  openIdentify(detectFromUrl(v));
+  if (/^https?:\/\//i.test(v) && !analyzing) {
+    setStatus('', "Lecture automatique de l'annonce en cours…");
+    const data = await fetchListing(v);
+    if (analyzing) { setStatus('hide', ''); return; }
+    if (data) {
+      const complete = applyExtracted(data, 'Annonce lue automatiquement');
+      setStatus('ok', complete ? 'Données extraites — analyse lancée.' : 'Extraction partielle : complétez les champs manquants ci-dessus.');
+    } else {
+      setStatus('ko', "Le bon coin bloque la lecture robotisée. Pas de souci : copiez le texte de l'annonce (Ctrl+A puis Ctrl+C sur la page) et collez-le ci-dessous — l'extraction express lit tout, instantanément.");
+      $('pasteInput').focus({ preventScroll: true });
+    }
+  }
+});
+input.addEventListener('input', () => urlError.classList.remove('visible'));
+
+$('extractBtn').addEventListener('click', () => {
+  const txt = $('pasteInput').value.trim();
+  if (txt.length < 30) {
+    setStatus('ko', "Collez d'abord le texte complet de l'annonce (Ctrl+A puis Ctrl+C sur la page Le bon coin).");
+    $('pasteInput').focus();
+    return;
+  }
+  const data = parseListingText(txt, txt.split('\n')[0].slice(0, 160));
+  const complete = applyExtracted(data, "Texte de l'annonce analysé");
+  setStatus(complete ? 'ok' : 'ko', complete ? 'Tout est extrait — analyse lancée.' : 'Extraction partielle : vérifiez les champs restants ci-dessus.');
+});
+
+$('runBtn').addEventListener('click', () => {
+  const year = parseInt(selYear.value, 10), km = parseInt(inpKm.value, 10), price = parseInt(inpPrice.value, 10);
+  if (!year || !(km >= 0) || !(price > 0)) {
+    $('identError').classList.add('visible');
+    (!(km >= 0) ? inpKm : inpPrice).focus();
+    return;
+  }
+  $('identError').classList.remove('visible');
+  runAnalysis({ brand: currentBrand(), model: currentModel(), eng: currentEngine(), box: selBox.value, year, km, price });
+});
+
+/* ---------- Exemples ---------- */
+const PRESETS = {
+  golf:  { b: 'Volkswagen', m: 'Golf 7', e: 1, box: 'a', year: 2019, km: 78500, price: 20990 },
+  lambo: { b: 'Lamborghini', m: 'Huracán', e: 0, box: 'a', year: 2017, km: 29500, price: 189900 },
+  clio:  { b: 'Renault', m: 'Clio V', e: 0, box: 'm', year: 2021, km: 45200, price: 13490 },
+  bmw:   { b: 'BMW', m: 'Série 3 (F30)', e: 1, box: 'a', year: 2016, km: 148000, price: 14900 },
+  p208:  { b: 'Peugeot', m: '208 II (2019+)', e: 0, box: 'm', year: 2020, km: 61300, price: 12990 }
+};
+document.querySelectorAll('.chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    const p = PRESETS[chip.dataset.demo];
+    const brand = BRANDS.find(b => b.name === p.b);
+    const model = brand.models.find(m => m.name === p.m);
+    input.value = 'https://www.leboncoin.fr/ad/voitures/' + (2830000000 + Math.abs(hash(p.b + p.m)) % 9999999);
+    urlError.classList.remove('visible');
+    fillBrands(brand); fillModels(brand, model); fillEngines(model);
+    selEngine.value = String(p.e); fillPowers(); fillBoxes(model.eng[p.e]); selBox.value = p.box;
+    fillYears(model, p.year); inpKm.value = p.km; inpPrice.value = p.price;
+    $('identifyMsg').innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><span>Exemple chargé&nbsp;: <strong>${escapeHtml(p.b)} ${escapeHtml(p.m)}</strong> ${p.year}, ${p.km.toLocaleString('fr-FR')} km, ${euro(p.price)}.</span>`;
+    $('identifyPanel').hidden = false;
+    runAnalysis({ brand, model, eng: model.eng[p.e], box: p.box, year: p.year, km: p.km, price: p.price });
+  });
+});
+function hash(s) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return h; }
+
+/* ============================================================
+   MOTEUR DE CALCUL
+   ============================================================ */
+function critAir(fuel, year) {
+  if (fuel === 'Électrique') return '0 (verte)';
+  if (fuel === 'Hybride') return '1';
+  if (fuel === 'Essence') return year >= 2011 ? '1' : (year >= 2006 ? '2' : '3');
+  return year >= 2011 ? '2' : (year >= 2006 ? '3' : '4');
+}
+function retention(seg, age) {
+  const curve = DEPRECIATION[seg];
+  const base = curve[Math.min(age, 12)];
+  return age > 12 ? base * Math.pow(0.97, age - 12) : base;
+}
+function computeValue(model, eng, year, km) {
+  const seg = eng.segx || model.seg;
+  const np = model.np * (eng.npx || 1);
+  const age = Math.max(YEAR_NOW - year, 0);
+  const expKm = EXP_KM_YEAR[seg] * Math.max(age, 0.5);
+  const diff = km - expKm;
+  const per10k = diff / 10000;
+  const sup = seg === 'supercar';
+  let kmF = 1 - per10k * (diff > 0 ? (sup ? 0.06 : 0.035) : (sup ? 0.045 : 0.022));
+  kmF = Math.min(1.2, Math.max(0.7, kmF));
+  const value = Math.max(np * retention(seg, age) * (model.hold || 1) * kmF, np * (model.floor || 0.05));
+  return { np, age, seg, expKm, value };
+}
+
+function analyse(sel) {
+  const { brand, model, eng, box, year, km, price } = sel;
+  const fam = ENGINES[eng.ref];
+  const { np, age, seg, value } = computeValue(model, eng, year, km);
+  const median = round50(value), min = round50(value * 0.9), max = round50(value * 1.12);
+  const delta = price - median, deltaPct = delta / median * 100;
+  const kmYear = Math.round(km / Math.max(age, 0.5));
+  const kmRatio = kmYear / EXP_KM_YEAR[seg];
+
+  /* Défauts déclenchés (moteur + boîte auto) */
+  const pool = [...fam.issues.map(i => ({ ...i, src: fam.label }))];
+  if (box === 'a' && eng.abox) pool.push(...GEARBOXES[eng.abox].issues.map(i => ({ ...i, src: GEARBOXES[eng.abox].label })));
+  const triggered = pool.filter(i =>
+    (!i.yMax || year <= i.yMax) && (!i.yMin || year >= i.yMin) && (!i.km || km >= i.km * 0.75));
+
+  /* Score facteur par facteur */
+  let score = 72; const scam = deltaPct <= -28 && price > 500;
+  if (scam) score -= 30;
+  else if (deltaPct <= -15) score += 6;
+  else if (deltaPct <= -5) score += 10;
+  else if (deltaPct < 5) score += 3;
+  else if (deltaPct < 12) score -= 6;
+  else if (deltaPct < 20) score -= 13;
+  else score -= 20;
+  if (kmRatio < 0.35 && age >= 3) score -= 4;
+  else if (kmRatio < 0.8) score += 5;
+  if (kmRatio > 2.2) score -= 10; else if (kmRatio > 1.6) score -= 6;
+  score += (fam.rel - 60) / 4;
+  let nbBad = 0, nbWarn = 0;
+  for (const i of triggered) { if (i.sev === 'bad') nbBad++; else nbWarn++; }
+  score -= Math.min(nbBad * 11, 22) + Math.min(nbWarn * 3, 9);
+  const ca = critAir(fam.fuel, year);
+  if (fam.fuel === 'Diesel' && parseInt(ca, 10) >= 2) score -= 4;
+  if (fam.fuel === 'Électrique') score += 3;
+  if (fam.fuel === 'Hybride') score += 2;
+  if (age >= 12) score -= 4;
+  score = Math.round(Math.min(96, Math.max(5, score)));
+
+  const level = scam ? 'bad' : score >= 75 ? 'good' : score >= 55 ? 'warn' : 'bad';
+  const label = scam ? "Risque d'arnaque" : level === 'good' ? 'Bonne affaire' : level === 'warn' ? 'Correct, à négocier' : 'Prudence';
+
+  /* Points forts */
+  const good = [];
+  if (!scam && deltaPct <= -5) good.push(`<strong>${euro(-delta)} sous la cote estimée</strong> (${deltaPct.toFixed(1).replace('.', ',')} %).`);
+  if (fam.rel >= 76) good.push(`Motorisation <strong>${escapeHtml(fam.label)}</strong> réputée fiable (indice ${fam.rel}/100).`);
+  if (kmRatio < 0.8 && !(kmRatio < 0.35 && age >= 3)) good.push(`Kilométrage contenu&nbsp;: <strong>${kmYear.toLocaleString('fr-FR')} km/an</strong> (moyenne du segment&nbsp;: ${EXP_KM_YEAR[seg].toLocaleString('fr-FR')}).`);
+  if (box === 'a' && eng.abox && (eng.abox === 'zf8' || eng.abox === 'pdk')) good.push(`Boîte <strong>${escapeHtml(GEARBOXES[eng.abox].label)}</strong> réputée robuste.`);
+  if (ca === '0 (verte)' || ca === '1') good.push(`Crit'Air ${escapeHtml(ca)}&nbsp;: <strong>aucune restriction ZFE</strong> à prévoir.`);
+  if (seg === 'supercar' && Math.abs(deltaPct) < 12) good.push(`Décote annuelle très faible sur ce segment&nbsp;: <strong>coût de possession limité</strong> si entretien suivi.`);
+  if (YEAR_NOW - year <= 2) good.push(`Véhicule récent&nbsp;: <strong>garantie constructeur</strong> potentiellement active — à vérifier.`);
+  if (!good.length) good.push(`Modèle courant&nbsp;: pièces disponibles et main-d'œuvre maîtrisée partout en France.`);
+
+  /* Points de vigilance */
+  const bad = [];
+  if (scam) bad.push({ t: `Prix <strong>${Math.abs(deltaPct).toFixed(0)} % sous la cote estimée</strong> (${euro(median)})&nbsp;: trop beau pour être vrai. Annonce potentiellement frauduleuse — ne versez <strong>jamais</strong> d'acompte à distance.`, sev: 'bad' });
+  for (const i of triggered.filter(x => x.sev === 'bad')) bad.push({ t: `<strong>${escapeHtml(i.src)}</strong>&nbsp;: ${escapeHtml(i.t)}`, sev: 'bad' });
+  if (!scam && deltaPct >= 5) bad.push({ t: `Prix <strong>${euro(delta)} au-dessus de la cote estimée</strong> (+${deltaPct.toFixed(1).replace('.', ',')} %).`, sev: deltaPct >= 15 ? 'bad' : 'warn' });
+  for (const i of triggered.filter(x => x.sev === 'warn')) bad.push({ t: `<strong>${escapeHtml(i.src)}</strong>&nbsp;: ${escapeHtml(i.t)}`, sev: 'warn' });
+  if (kmRatio > 1.6) bad.push({ t: `Gros rouleur&nbsp;: <strong>${kmYear.toLocaleString('fr-FR')} km/an</strong> — usure supérieure à la moyenne du segment.`, sev: 'warn' });
+  if (kmRatio < 0.35 && age >= 3) bad.push({ t: `Kilométrage anormalement bas pour l'âge&nbsp;: exigez l'<strong>historique Histovec</strong> (risque compteur/immobilisation).`, sev: 'warn' });
+  if (fam.fuel === 'Diesel' && parseInt(ca, 10) >= 2) bad.push({ t: `Crit'Air ${escapeHtml(ca)}&nbsp;: <strong>restrictions ZFE</strong> croissantes dans les grandes métropoles.`, sev: 'warn' });
+  if (age >= 12) bad.push({ t: `Véhicule de <strong>${age} ans</strong>&nbsp;: prévoir l'usure des périphériques (trains roulants, durites, joints).`, sev: 'warn' });
+  if (!bad.length) bad.push({ t: `Aucun défaut majeur connu déclenché pour ce kilométrage — restez attentif à l'état général.`, sev: 'warn' });
+
+  /* Contre-visite : contrôles + questions */
+  const checks = [], asks = [];
+  for (const i of triggered) { if (i.chk) checks.push(i.chk); if (i.ask) asks.push(i.ask); }
+  checks.push('Essai moteur froid obligatoire : démarrage, ralenti, premiers kilomètres.',
+    'Rapport Histovec (gratuit, officiel) : accidents, gages, kilométrage certifié.',
+    'Factures d’entretien : cohérence dates / kilométrages / interventions.');
+  asks.push('Pourquoi vendez-vous ? Depuis combien de temps possédez-vous le véhicule ?',
+    'Le véhicule a-t-il été accidenté, même légèrement ?',
+    'Avez-vous les deux clés, le carnet et le dernier contrôle technique ?');
+
+  /* Budget */
+  const maint = Math.round(MAINT_BASE[seg] * (seg === 'supercar' || seg === 'sport' ? 1 : TIER_MAINT[brand.tier]) * (model.mx || 1) * (1 + Math.max(0, age - 4) * 0.05) / 10) * 10;
+  let insur = Math.round((28 + eng.p * 0.32) * TIER_INSUR[brand.tier]);
+  if (fam.fuel === 'Électrique') insur = Math.round(insur * 0.9);
+  if (seg === 'supercar') insur = Math.max(insur, 380);
+
+  /* Décote (courbe valeur théorique) */
+  const decoteVals = [];
+  for (let i = 0; i <= Math.max(age, 1); i++) decoteVals.push(Math.round(np * retention(seg, i)));
+  const perYear = age >= 1 ? decoteVals[decoteVals.length - 2] - decoteVals[decoteVals.length - 1] : np - decoteVals[decoteVals.length - 1];
+
+  /* Négociation */
+  const badCost = triggered.filter(i => i.sev === 'bad' && i.cost).reduce((s, i) => s + i.cost, 0);
+  const warnCost = triggered.filter(i => i.sev === 'warn' && i.cost).reduce((s, i) => s + i.cost, 0);
+  let target = Math.min(median, price) - Math.min(badCost * 0.6 + warnCost * 0.2, price * 0.18);
+  if (target > price) target = price * 0.97;
+  const nego = {
+    scam,
+    lo: round50(Math.max(target * 0.975, price * 0.5)),
+    hi: round50(Math.max(target, price * 0.52)),
+    args: []
+  };
+  if (!scam) {
+    if (delta > 0) nego.args.push(`La cote estimée d'un ${model.name} ${year} à ce kilométrage est de ${euro(median)} — soit ${euro(delta)} de moins que l'affiche.`);
+    else nego.args.push(`Le prix est cohérent avec la cote estimée (${euro(median)}) : négociez sur l'état, pas sur le marché.`);
+    for (const i of triggered.filter(x => x.cost && x.sev === 'bad').slice(0, 2))
+      nego.args.push(`${i.src} — ${i.t.split(':')[0].trim()} : provision ≈ ${euro(i.cost)} si non justifié par facture.`);
+    if (!triggered.some(x => x.sev === 'bad') && warnCost) nego.args.push(`Entretiens à prévoir (≈ ${euro(warnCost)}) : autant d'arguments factuels de remise.`);
+    if (kmRatio > 1.6) nego.args.push(`Kilométrage ${kmYear.toLocaleString('fr-FR')} km/an au-dessus de la moyenne : la revente en pâtira, le prix doit l'intégrer.`);
+    nego.args.push('Paiement rapide et décision immédiate en échange du prix conclu.');
+  }
+
+  /* Verdict rédigé */
+  let vTitle, vText;
+  if (scam) {
+    vTitle = 'Trop beau pour être vrai — protégez-vous.';
+    vText = `Un ${brand.name} ${model.name} ${year} à ${euro(price)} alors que la cote estimée est de ${euro(median)} : c'est le schéma classique de l'annonce frauduleuse (véhicule inexistant, usurpation, acompte exigé). Ne payez rien à distance, exigez une visite réelle, la carte grise au nom du vendeur et vérifiez le VIN sur Histovec.`;
+  } else if (level === 'good') {
+    vTitle = 'Foncez — mais négociez quand même.';
+    vText = `Prix ${deltaPct <= -5 ? 'sous la cote estimée' : 'cohérent'}, motorisation ${fam.rel >= 70 ? 'bien notée' : 'sans alerte majeure à ce kilométrage'} : le dossier est favorable. ${triggered.length ? 'Faites confirmer les points de vigilance listés lors de la contre-visite, facture en main.' : 'Déroulez la contre-visite guidée et concluez sereinement.'}`;
+  } else if (level === 'warn') {
+    vTitle = nbBad ? 'Correct — sous conditions vérifiables.' : 'Bonne voiture, prix à discuter.';
+    vText = nbBad
+      ? `Le dossier tient si — et seulement si — les points critiques (${triggered.filter(x => x.sev === 'bad').map(x => x.src).join(', ')}) sont justifiés par factures. Sans preuve : déduisez la remise en état, ou passez.`
+      : `Le véhicule est cohérent mais ${deltaPct >= 5 ? `affiché ${euro(delta)} au-dessus de la cote estimée` : 'quelques entretiens approchent'}. Utilisez les arguments chiffrés ci-dessus : le juste prix se situe autour de ${euro(nego.hi)}.`;
+  } else {
+    vTitle = 'Ne signez rien sans preuves.';
+    vText = `Entre ${nbBad ? 'les défauts connus de cette motorisation à ce kilométrage' : 'le positionnement prix'} et ${age >= 10 ? "l'âge du véhicule" : 'les points de vigilance relevés'}, le risque financier est réel. Exigez factures et historique complet ; au moindre doute, il y a d'autres exemplaires sur le marché.`;
+  }
+
+  return {
+    title: `${brand.name} ${model.name}`,
+    sub: [`${fam.label}`, `${eng.p} ch`, box === 'a' ? (eng.abox ? GEARBOXES[eng.abox].label : 'Automatique') : 'Boîte manuelle', String(year)],
+    price, median, min, max, score, level, label, scam,
+    specs: [
+      ['Année', String(year), 'cal'], ['Kilométrage', km.toLocaleString('fr-FR') + ' km', 'road'],
+      ['Énergie', fam.fuel, 'fuel'], ['Boîte', box === 'a' ? 'Automatique' : 'Manuelle', 'gear'],
+      ['Puissance', eng.p + ' ch', 'bolt'], ["Crit'Air", ca, 'leaf'],
+      ['Kilométrage annuel', kmYear.toLocaleString('fr-FR') + ' km/an', 'user'],
+      ['Fiabilité motorisation', fam.rel + '/100', 'check']
+    ],
+    good, bad, checks: checks.slice(0, 6), asks: asks.slice(0, 6),
+    decote: { from: year, values: decoteVals, perYear },
+    costs: { maint, insur, conso: fam.conso },
+    nego,
+    verdict: { title: vTitle, text: vText },
+    sample: `Cote reconstruite : prix neuf ≈ ${euro(np)} × décote ${SEG_LABEL[seg].toLowerCase()} sur ${age} an${age > 1 ? 's' : ''} × correction kilométrage. Fourchette ± 10 %.`
+  };
+}
+
+/* ============================================================
+   RENDU DU RAPPORT
+   ============================================================ */
+const SPEC_ICONS = {
+  cal:'<path d="M8 2v4M16 2v4"/><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18"/>',
+  road:'<circle cx="12" cy="12" r="10"/><path d="M12 6v2M12 11v2M12 16v2"/>',
+  fuel:'<path d="M3 22V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16"/><path d="M2 22h12M13 10h2a2 2 0 0 1 2 2v4a1.5 1.5 0 0 0 3 0V9l-3-3"/>',
+  gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.2 2.2M17.6 17.6l2.2 2.2M2 12h3M19 12h3M4.2 19.8l2.2-2.2M17.6 6.4l2.2-2.2"/>',
+  bolt:'<path d="M13 2 3 14h7l-1 8 11-13h-7l0.5-7Z"/>',
+  leaf:'<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.5 19 2c1 2 2 4.2 2 8a10 10 0 0 1-10 10Z"/><path d="M2 21c0-3 1.9-5.5 5-6"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/>',
+  check:'<path d="M12 2 3 7v6c0 5 3.8 9.4 9 11 5.2-1.6 9-6 9-11V7l-9-5Z"/><path d="m9 12 2 2 4-4"/>'
+};
+const VERDICT_ICONS = {
+  good:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 3 7v6c0 5 3.8 9.4 9 11 5.2-1.6 9-6 9-11V7l-9-5Z"/><path d="m9 12 2 2 4-4"/></svg>',
+  warn:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>',
+  bad:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg>'
+};
+const VERDICT_COLOR = { good: 'var(--good)', warn: 'var(--warn)', bad: 'var(--bad)' };
+const scanPanel = $('scanPanel');
+
+function runAnalysis(sel) {
+  if (analyzing) return;
+  analyzing = true;
+  $('analyzeBtn').disabled = true; $('runBtn').disabled = true;
+  const steps = scanPanel.querySelectorAll('.scan-step');
+  steps.forEach(s => s.classList.remove('running', 'done'));
+  $('rapport').classList.remove('visible');
+  scanPanel.classList.add('active');
+  const stepDelay = REDUCED ? 0 : 560;
+  steps.forEach((s, i) => {
+    setTimeout(() => s.classList.add('running'), i * stepDelay);
+    setTimeout(() => { s.classList.remove('running'); s.classList.add('done'); }, (i + 1) * stepDelay - 80);
+  });
+  setTimeout(() => {
+    scanPanel.classList.remove('active');
+    renderReport(analyse(sel));
+    analyzing = false;
+    $('analyzeBtn').disabled = false; $('runBtn').disabled = false;
+  }, steps.length * stepDelay + (REDUCED ? 40 : 180));
+}
+
+function renderReport(r) {
+  $('carTitle').textContent = r.title;
+  $('carSub').innerHTML = r.sub.map(s => escapeHtml(s)).join('<span class="sep" aria-hidden="true">•</span>');
+  $('carPrice').textContent = euro(r.price);
+
+  const pill = $('verdictPill');
+  pill.className = 'verdict-pill v-' + r.level;
+  pill.innerHTML = VERDICT_ICONS[r.level].replace(/width="24" height="24"/, 'width="16" height="16"') + escapeHtml(r.label);
+
+  /* Jauge (arc 270°, C = 2π×80 ≈ 502.6) */
+  const C = 502.6, arc = 0.75 * C, fill = $('gaugeFill');
+  fill.style.stroke = VERDICT_COLOR[r.level];
+  fill.setAttribute('stroke-dasharray', arc + ' ' + C);
+  fill.setAttribute('stroke-dashoffset', String(arc));
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    fill.style.strokeDashoffset = String(arc * (1 - r.score / 100));
+  }));
+  animateNumber($('gaugeScore'), r.score, 1100);
+  $('gaugeScore').style.color = VERDICT_COLOR[r.level];
+
+  /* Prix vs cote */
+  const span = r.max - r.min;
+  const pos = Math.min(92, Math.max(8, ((r.price - r.min) / span) * 100));
+  $('priceMin').textContent = euro(r.min);
+  $('priceMax').textContent = euro(r.max);
+  $('priceMedian').style.left = (((r.median - r.min) / span) * 100) + '%';
+  const marker = $('priceMarker');
+  marker.dataset.label = euro(r.price);
+  marker.style.left = pos + '%';
+  $('priceSample').textContent = r.sample;
+  const delta = r.price - r.median, deltaPct = Math.abs(delta) / r.median * 100;
+  const dB = $('deltaBadge');
+  dB.className = 'delta-badge ' + (r.scam ? 'd-bad' : delta <= -r.median * 0.05 ? 'd-good' : delta >= r.median * 0.05 ? 'd-bad' : 'd-warn');
+  dB.textContent = (delta > 0 ? '+' : '−') + Math.abs(Math.round(delta)).toLocaleString('fr-FR') + ' € (' + (delta > 0 ? '+' : '−') + deltaPct.toFixed(1).replace('.', ',') + ' %)';
+  $('deltaText').textContent = (delta > 0 ? 'au-dessus' : 'sous') + ' la cote estimée pour cet exemplaire' + (r.scam ? ' — écart suspect' : '');
+  $('priceTrackImg').setAttribute('aria-label', `Prix demandé ${euro(r.price)}, cote estimée ${euro(r.median)}, fourchette de ${euro(r.min)} à ${euro(r.max)}.`);
+
+  /* Specs */
+  $('specsGrid').innerHTML = r.specs.map(([k, v, icon]) =>
+    '<div class="spec"><div class="k"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+    + SPEC_ICONS[icon] + '</svg>' + escapeHtml(k) + '</div><div class="v">' + escapeHtml(v) + '</div></div>').join('');
+
+  /* Flags */
+  $('goodFlags').innerHTML = r.good.map(txt =>
+    '<li><span class="flag-icon f-good"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span><span>' + txt + '</span></li>').join('');
+  $('badFlags').innerHTML = r.bad.map(({ t, sev }) => {
+    const cls = sev === 'bad' ? 'f-bad' : 'f-warn';
+    const ico = sev === 'bad'
+      ? '<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/>'
+      : '<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>';
+    return '<li><span class="flag-icon ' + cls + '"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ico + '</svg></span><span>' + t + '</span></li>';
+  }).join('');
+
+  /* Contre-visite */
+  const liIco = (svgPath) => '<span class="flag-icon f-warn" style="background:var(--accent-soft);color:var(--accent-text)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + svgPath + '</svg></span>';
+  $('checkList').innerHTML = r.checks.map(c => '<li>' + liIco('<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>') + '<span>' + escapeHtml(c) + '</span></li>').join('');
+  $('askList').innerHTML = r.asks.map(q => '<li>' + liIco('<path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2Z"/>') + '<span>' + escapeHtml(q) + '</span></li>').join('');
+
+  /* Décote */
+  drawSparkline(r.decote);
+  $('decoteValue').textContent = '−' + Math.round(r.decote.perYear).toLocaleString('fr-FR') + ' €/an';
+  $('sparkFrom').textContent = String(r.decote.from);
+
+  /* Budget */
+  $('costMaint').innerHTML = r.costs.maint.toLocaleString('fr-FR') + '<span class="unit"> €/an</span>';
+  $('costInsur').innerHTML = r.costs.insur.toLocaleString('fr-FR') + '<span class="unit"> €/mois</span>';
+  $('costConso').innerHTML = typeof r.costs.conso === 'number'
+    ? String(r.costs.conso).replace('.', ',') + '<span class="unit"> L/100</span>'
+    : escapeHtml(r.costs.conso) + '<span class="unit"> /100 km</span>';
+
+  /* Négociation */
+  if (r.nego.scam) {
+    $('negoRange').textContent = 'Ne négociez pas';
+    $('negoArgs').innerHTML = '<li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--bad)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg><span>Vérifiez d’abord que l’annonce est réelle : visite physique, carte grise au nom du vendeur, VIN contrôlé sur Histovec. Aucun paiement ni acompte à distance, quel que soit le prétexte.</span></li>';
+  } else {
+    $('negoRange').textContent = euro(r.nego.lo) + ' – ' + euro(r.nego.hi);
+    $('negoArgs').innerHTML = r.nego.args.map(a =>
+      '<li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg><span>' + escapeHtml(a) + '</span></li>').join('');
+  }
+
+  /* Verdict */
+  const banner = $('verdictBanner');
+  banner.className = 'verdict-banner v-' + r.level;
+  $('verdictIcon').innerHTML = VERDICT_ICONS[r.level];
+  $('verdictTitle').textContent = r.verdict.title;
+  $('verdictText').textContent = r.verdict.text;
+
+  const rapport = $('rapport');
+  rapport.classList.add('visible');
+  rapport.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth', block: 'start' });
+  setTimeout(() => $('carTitle').focus({ preventScroll: true }), REDUCED ? 0 : 600);
+}
+
+function drawSparkline(dec) {
+  const vals = dec.values, W = 320, H = 76, PAD = 6;
+  const min = Math.min(...vals), max = Math.max(...vals);
+  const x = (i) => PAD + (i / Math.max(vals.length - 1, 1)) * (W - 2 * PAD);
+  const y = (v) => PAD + (1 - (v - min) / Math.max(max - min, 1)) * (H - 2 * PAD);
+  const pts = vals.map((v, i) => [x(i), y(v)]);
+  const line = 'M' + pts.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' L');
+  $('sparkLine').setAttribute('d', line);
+  $('sparkArea').setAttribute('d', line + ' L' + (W - PAD) + ' ' + (H - PAD) + ' L' + PAD + ' ' + (H - PAD) + ' Z');
+  const last = pts[pts.length - 1];
+  $('sparkPt').setAttribute('cx', last[0].toFixed(1));
+  $('sparkPt').setAttribute('cy', last[1].toFixed(1));
+}
+
+function animateNumber(el, target, dur) {
+  if (REDUCED) { el.textContent = String(target); return; }
+  const t0 = performance.now();
+  (function tick(t) {
+    const p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+    el.textContent = String(Math.round(target * e));
+    if (p < 1) requestAnimationFrame(tick);
+  })(t0);
+}
+
+/* ---------- Copie du message vendeur ---------- */
+$('copyNego').addEventListener('click', async () => {
+  const title = $('carTitle').textContent, range = $('negoRange').textContent;
+  const args = Array.from(document.querySelectorAll('#negoArgs li span:last-child')).map(s => '– ' + s.textContent).join('\n');
+  const msg = 'Bonjour,\n\nVotre ' + title + ' m’intéresse sérieusement. Après étude des cotes et de la fiabilité du modèle :\n' + args + '\n\nJe vous propose ' + range + ', avec un règlement rapide si nous trouvons un accord. Seriez-vous disponible pour un essai cette semaine ?\n\nCordialement';
+  try {
+    await navigator.clipboard.writeText(msg);
+    const fb = $('copyFeedback');
+    fb.classList.add('show');
+    setTimeout(() => fb.classList.remove('show'), 2500);
+  } catch { /* clipboard indisponible : silencieux */ }
+});
+
+/* ---------- Stats count-up ---------- */
+function formatStat(el, val) { el.textContent = val.toLocaleString('fr-FR'); }
+const statsSeen = new WeakSet();
+const statObserver = new IntersectionObserver((entries) => {
+  entries.forEach(en => {
+    if (!en.isIntersecting || statsSeen.has(en.target)) return;
+    statsSeen.add(en.target);
+    const target = parseInt(en.target.dataset.count, 10);
+    if (REDUCED) { formatStat(en.target, target); return; }
+    const t0 = performance.now(), dur = 1400;
+    (function tick(t) {
+      const p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+      formatStat(en.target, Math.round(target * e));
+      if (p < 1) requestAnimationFrame(tick);
+    })(t0);
+  });
+}, { threshold: .5 });
+document.querySelectorAll('.stat-num').forEach(el => statObserver.observe(el));
+
+/* ---------- Reveal on scroll ---------- */
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach((en) => {
+    if (en.isIntersecting) { en.target.classList.add('in'); revealObserver.unobserve(en.target); }
+  });
+}, { threshold: .12, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.reveal').forEach((el, i) => {
+  el.style.transitionDelay = (Math.min(i % 6, 4) * 60) + 'ms';
+  revealObserver.observe(el);
+});
+
+/* ---------- Nav mobile ---------- */
+const burger = $('burger'), navLinks = $('navLinks');
+burger.addEventListener('click', () => {
+  const open = navLinks.classList.toggle('open');
+  burger.setAttribute('aria-expanded', String(open));
+  burger.setAttribute('aria-label', open ? 'Fermer le menu' : 'Ouvrir le menu');
+});
+navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+  navLinks.classList.remove('open');
+  burger.setAttribute('aria-expanded', 'false');
+}));
+</script>
+</body>
+</html>

@@ -463,6 +463,35 @@ footer nav a:hover{color:var(--ink)}
   .price-marker{box-shadow:none}
 }
 
+/* ============ SCORE EXPLIQUÉ ============ */
+.score-detail{margin-top:var(--space-3);width:100%;text-align:left}
+.score-detail summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--accent-text);list-style:none;display:inline-flex;align-items:center;gap:6px;min-height:44px}
+.score-detail summary::-webkit-details-marker{display:none}
+.score-detail summary::before{content:"▸";transition:transform .2s var(--ease)}
+.score-detail[open] summary::before{transform:rotate(90deg)}
+.score-detail ul{list-style:none;margin-top:8px;display:flex;flex-direction:column;gap:6px;font-size:13px}
+.score-detail li{display:flex;justify-content:space-between;gap:12px;color:var(--ink-2)}
+.score-detail li .pts{font-family:var(--font-mono);font-weight:600;flex:none}
+.score-detail li .pts.plus{color:var(--good)}
+.score-detail li .pts.minus{color:var(--bad)}
+.score-detail li.base{color:var(--ink-3);border-bottom:1px dashed var(--line);padding-bottom:6px}
+
+/* ============ PHOTO DU MODÈLE ============ */
+.photo-card{padding:0;overflow:hidden}
+.photo-card img{width:100%;max-height:280px;object-fit:cover;display:block}
+.photo-card figcaption{padding:10px 16px;font-size:12px;color:var(--ink-3)}
+
+/* ============ COMPARATEUR ============ */
+.cmp-wrap{overflow-x:auto}
+.cmp-table{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums;min-width:640px}
+.cmp-table th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line-strong)}
+.cmp-table td{padding:10px;border-bottom:1px solid var(--line);color:var(--ink-2)}
+.cmp-table tr.best td{background:var(--good-soft)}
+.cmp-table tr.cmp-row{cursor:pointer}
+.cmp-table tr.cmp-row:hover td{background:var(--surface-2)}
+.cmp-table .sc{font-family:var(--font-mono);font-weight:600}
+.cmp-best-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--good);background:var(--good-soft);border-radius:999px;padding:2px 8px;margin-left:8px}
+
 /* ============ ACTIONS RAPPORT & HISTORIQUE ============ */
 .report-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;flex-wrap:wrap}
 .report-actions .btn{min-height:38px;padding:0 14px;font-size:13px}
@@ -671,6 +700,12 @@ footer nav a:hover{color:var(--ink)}
     </div>
 
     <div class="report-grid">
+      <!-- Photo d'illustration du modèle -->
+      <figure class="card col-12 photo-card" id="photoCard" hidden>
+        <img id="carPhoto" alt="" loading="lazy">
+        <figcaption>Photo d'illustration du modèle (Wikimedia Commons) — ce n'est pas le véhicule de l'annonce.</figcaption>
+      </figure>
+
       <!-- Score -->
       <div class="card col-4 gauge-card">
         <h3 style="align-self:flex-start">
@@ -693,6 +728,10 @@ footer nav a:hover{color:var(--ink)}
           <span><span class="band-dot" style="background:var(--warn)"></span>55–74 correct</span>
           <span><span class="band-dot" style="background:var(--good)"></span>≥ 75 bonne affaire</span>
         </div>
+        <details class="score-detail">
+          <summary>Score expliqué — le détail du calcul</summary>
+          <ul id="factorList"></ul>
+        </details>
       </div>
 
       <!-- Prix vs marché -->
@@ -823,6 +862,24 @@ footer nav a:hover{color:var(--ink)}
             </button>
             <span class="copy-feedback" id="copyFeedback" role="status">Message copié&nbsp;!</span>
           </div>
+        </div>
+      </div>
+      <!-- Comparateur multi-annonces -->
+      <div class="card col-12" id="compareCard" hidden>
+        <h3>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>
+          Comparateur — vos annonces analysées
+          <span class="cmp-best-badge" aria-hidden="true">★ meilleur choix surligné</span>
+        </h3>
+        <div class="cmp-wrap">
+          <table class="cmp-table">
+            <thead><tr><th>Véhicule</th><th>Année</th><th>Km</th><th>Prix</th><th>Cote est.</th><th>Écart</th><th>Score</th></tr></thead>
+            <tbody id="cmpBody"></tbody>
+          </table>
+        </div>
+        <div style="margin-top:14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <button type="button" class="btn btn-ghost" id="clearHistBtn" style="min-height:38px;font-size:13px">Vider le comparateur</button>
+          <span style="font-size:12.5px;color:var(--ink-3)">Cliquez une ligne pour rouvrir son rapport. Stocké uniquement dans votre navigateur.</span>
         </div>
       </div>
     </div>
@@ -1122,15 +1179,27 @@ function normText(raw) {
   let s; try { s = decodeURIComponent(raw); } catch { s = raw; }
   return ' ' + s.toLowerCase().replace(/ /g, ' ').replace(/[-_+.,/?=&#|;:!()'"«»]/g, ' ').replace(/\s+/g, ' ') + ' ';
 }
-const bound = (a) => new RegExp('(^|[^0-9a-zà-ÿ])' + a.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '($|[^0-9a-zà-ÿ])');
+/* Frontières intelligentes :
+   - alias numériques ("320") acceptent un suffixe motorisation ("320d", "118i")
+   - transitions lettre↔chiffre tolèrent une espace ("C220" ↔ "c 220")
+   - les tirets d'alias matchent l'espace de normalisation ("cr-v" ↔ "cr v") */
+const bound = (a) => {
+  let p = a.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/-/g, '\\s?');
+  p = p.replace(/([a-zà-ÿ])(\d)/g, '$1\\s?$2').replace(/(\d)([a-zà-ÿ])/g, '$1\\s?$2');
+  const suffix = /^\d+$/.test(a) ? '[a-z]{0,2}' : '';
+  return new RegExp('(^|[^0-9a-zà-ÿ])' + p + suffix + '($|[^0-9a-zà-ÿ])');
+};
 function detectVehicle(raw, title, yearHint) {
   const s = normText(raw);
-  const tz = title ? normText(title) : s.slice(0, 320);
+  /* Chaîne de matching modèle : on retire prix/kilométrages groupés ("20 990",
+     "78 500") et puissances ("150 ch") pour qu'ils ne matchent pas un modèle. */
+  const sm = s.replace(/\d{1,3}(?:[\s.]\d{3})+/g, ' ').replace(/(\d{2,4})\s?(ch|cv|kw)(?=$|[^0-9a-zà-ÿ])/g, ' ');
+  const tz = title ? normText(title) : sm.slice(0, 320);
   const found = { brand: null, model: null, year: null, km: null };
   let bBest = null;
   for (const b of BRANDS) {
     for (const a of b.alias) {
-      if (!bound(a).test(s)) continue;
+      if (!bound(a).test(sm)) continue;
       const sc = a.length * 10 + (bound(a).test(tz) ? 30 : 0);
       if (!bBest || sc > bBest.sc) bBest = { b, sc };
     }
@@ -1148,11 +1217,13 @@ function detectVehicle(raw, title, yearHint) {
     for (const m of b.models) for (const a of m.alias) shared[a] = (shared[a] || 0) + 1;
     for (const m of b.models) {
       for (const a of m.alias) {
-        if (!bound(a).test(s)) continue;
+        if (!bound(a).test(sm)) continue;
         let sc = a.length * 10;
         if (shared[a] === 1) sc += 15;
         if (bound(a).test(tz)) sc += 30;
         if (found.year && found.year >= m.y[0] && found.year <= m.y[1]) sc += 100;
+        /* à égalité, préférer la génération la plus récente (marché dominant) */
+        sc += (Math.min(m.y[1], YEAR_NOW) - 1980) / 20;
         if (!best || sc > best.sc) best = { b, m, sc };
       }
     }
@@ -1221,9 +1292,20 @@ function parseListingText(text, title) {
   const t = ' ' + String(text).replace(/ /g, ' ').replace(/\s+/g, ' ') + ' ';
   const num = (x) => x != null ? parseInt(String(x).replace(/[^\d]/g, ''), 10) : null;
   let year = null, m1;
-  m1 = t.match(/ann[ée]e[\s-]*mod[èe]le\s*:?\s*((?:19|20)\d{2})/i) || t.match(/mise en circulation\s*:?\s*(?:\d{1,2}\/)?((?:19|20)\d{2})/i);
+  m1 = t.match(/ann[ée]e(?:[\s-]*mod[èe]le)?\s*:?\s*((?:19|20)\d{2})/i)
+    || t.match(/mise en circulation\s*:?\s*(?:\d{1,2}[\/.])?((?:19|20)\d{2})/i)
+    || (title ? String(title).match(/((?:19[5-9]|20[0-2])\d)/) : null);
   if (m1) year = +m1[1];
-  else { m1 = t.match(/(^|[^\d])((?:19[5-9]|20[0-2])\d)([^\d]|$)/); if (m1) year = +m1[2]; }
+  else {
+    /* repli : l'année la plus fréquente du texte (le millésime y revient
+       plusieurs fois, contrairement à « membre depuis 2003 ») */
+    const ys = [...t.matchAll(/(^|[^\d])((?:19[5-9]|20[0-2])\d)([^\d]|$)/g)].map(x => +x[2]).filter(y => y <= new Date().getFullYear() + 1);
+    if (ys.length) {
+      const freq = {};
+      ys.forEach(y => { freq[y] = (freq[y] || 0) + 1; });
+      year = +Object.entries(freq).sort((a, b) => b[1] - a[1] || b[0] - a[0])[0][0];
+    }
+  }
   let km = null;
   m1 = t.match(/kilom[ée]trage\s*:?\s*([\d\s.,]{2,12})\s*km/i) || t.match(/(\d{1,3}(?:[\s.]\d{3})+)\s*km(?![\/\w])/i) || t.match(/(\d{4,6})\s*km(?![\/\w])/i);
   if (m1) km = num(m1[1]);
@@ -1481,27 +1563,34 @@ function analyse(sel) {
   const triggered = pool.filter(i =>
     (!i.yMax || year <= i.yMax) && (!i.yMin || year >= i.yMin) && (!i.km || km >= i.km * 0.75));
 
-  /* Score facteur par facteur */
-  let score = 72; const scam = deltaPct <= -28 && price > 500;
-  if (scam) score -= 30;
-  else if (deltaPct <= -15) score += 6;
-  else if (deltaPct <= -5) score += 10;
-  else if (deltaPct < 5) score += 3;
-  else if (deltaPct < 12) score -= 6;
-  else if (deltaPct < 20) score -= 13;
-  else score -= 20;
-  if (kmRatio < 0.35 && age >= 3) score -= 4;
-  else if (kmRatio < 0.8) score += 5;
-  if (kmRatio > 2.2) score -= 10; else if (kmRatio > 1.6) score -= 6;
-  score += (fam.rel - 60) / 4;
+  /* Score facteur par facteur — chaque ajustement est journalisé et
+     affiché à l'utilisateur (score expliqué, pas de boîte noire) */
+  let score = 72;
+  const factors = [{ lbl: 'Base (annonce moyenne du marché)', pts: 72, base: true }];
+  const F = (lbl, pts) => { score += pts; factors.push({ lbl, pts: Math.round(pts * 10) / 10 }); };
+  const scam = deltaPct <= -28 && price > 500;
+  const pctTxt = Math.abs(deltaPct).toFixed(0) + ' %';
+  if (scam) F('Prix ' + pctTxt + ' sous la cote : schéma d\'arnaque', -30);
+  else if (deltaPct <= -15) F('Prix très en dessous de la cote (à vérifier)', 6);
+  else if (deltaPct <= -5) F('Prix ' + pctTxt + ' sous la cote estimée', 10);
+  else if (deltaPct < 5) F('Prix aligné sur la cote estimée', 3);
+  else if (deltaPct < 12) F('Prix ' + pctTxt + ' au-dessus de la cote', -6);
+  else if (deltaPct < 20) F('Prix ' + pctTxt + ' au-dessus de la cote', -13);
+  else F('Prix ' + pctTxt + ' au-dessus de la cote', -20);
+  if (kmRatio < 0.35 && age >= 3) F('Kilométrage anormalement bas pour l\'âge', -4);
+  else if (kmRatio < 0.8) F('Kilométrage contenu (' + kmYear.toLocaleString('fr-FR') + ' km/an)', 5);
+  if (kmRatio > 2.2) F('Très gros rouleur (' + kmYear.toLocaleString('fr-FR') + ' km/an)', -10);
+  else if (kmRatio > 1.6) F('Gros rouleur (' + kmYear.toLocaleString('fr-FR') + ' km/an)', -6);
+  F('Fiabilité documentée de la motorisation (' + fam.rel + '/100)', (fam.rel - 60) / 4);
   let nbBad = 0, nbWarn = 0;
   for (const i of triggered) { if (i.sev === 'bad') nbBad++; else nbWarn++; }
-  score -= Math.min(nbBad * 11, 22) + Math.min(nbWarn * 3, 9);
+  if (nbBad) F(nbBad + ' défaut(s) critique(s) connu(s) à ce kilométrage', -Math.min(nbBad * 11, 22));
+  if (nbWarn) F(nbWarn + ' point(s) d\'entretien à prévoir', -Math.min(nbWarn * 3, 9));
   const ca = critAir(fam.fuel, year);
-  if (fam.fuel === 'Diesel' && parseInt(ca, 10) >= 2) score -= 4;
-  if (fam.fuel === 'Électrique') score += 3;
-  if (fam.fuel === 'Hybride') score += 2;
-  if (age >= 12) score -= 4;
+  if (fam.fuel === 'Diesel' && parseInt(ca, 10) >= 2) F('Diesel Crit\'Air ' + ca + ' : restrictions ZFE', -4);
+  if (fam.fuel === 'Électrique') F('Électrique : coût d\'usage et ZFE favorables', 3);
+  if (fam.fuel === 'Hybride') F('Hybride : usage mixte favorable', 2);
+  if (age >= 12) F('Véhicule de ' + age + ' ans : usure des périphériques', -4);
   score = Math.round(Math.min(96, Math.max(5, score)));
 
   const level = scam ? 'bad' : score >= 75 ? 'good' : score >= 55 ? 'warn' : 'bad';
@@ -1601,7 +1690,7 @@ function analyse(sel) {
       ['Kilométrage annuel', kmYear.toLocaleString('fr-FR') + ' km/an', 'user'],
       ['Fiabilité motorisation', fam.rel + '/100', 'check']
     ],
-    good, bad, checks: checks.slice(0, 6), asks: asks.slice(0, 6),
+    good, bad, factors, checks: checks.slice(0, 6), asks: asks.slice(0, 6),
     decote: { from: year, values: decoteVals, perYear },
     costs: { maint, insur, conso: fam.conso },
     nego,
@@ -1647,8 +1736,9 @@ function runAnalysis(sel) {
   setTimeout(() => {
     scanPanel.classList.remove('active');
     const r = analyse(sel);
-    try { saveHistory(sel, r); renderHistory(); } catch { /* stockage local indisponible */ }
+    try { saveHistory(sel, r); renderHistory(); renderComparator(); } catch { /* stockage local indisponible */ }
     renderReport(r);
+    loadPhoto(sel);
     analyzing = false;
     $('analyzeBtn').disabled = false; $('runBtn').disabled = false;
   }, steps.length * stepDelay + (REDUCED ? 40 : 180));
@@ -1673,6 +1763,12 @@ function renderReport(r) {
   }));
   animateNumber($('gaugeScore'), r.score, 1100);
   $('gaugeScore').style.color = VERDICT_COLOR[r.level];
+
+  /* Score expliqué */
+  $('factorList').innerHTML = r.factors.map(f => f.base
+    ? '<li class="base"><span>' + escapeHtml(f.lbl) + '</span><span class="pts">' + f.pts + '</span></li>'
+    : '<li><span>' + escapeHtml(f.lbl) + '</span><span class="pts ' + (f.pts >= 0 ? 'plus' : 'minus') + '">' + (f.pts >= 0 ? '+' : '−') + Math.abs(f.pts).toLocaleString('fr-FR') + '</span></li>'
+  ).join('') + '<li class="base" style="border-top:1px dashed var(--line);border-bottom:none;padding-top:6px"><span>Total (borné 5–96)</span><span class="pts">' + r.score + '</span></li>';
 
   /* Prix vs cote */
   const span = r.max - r.min;
@@ -1796,7 +1892,7 @@ function loadHistory() {
   try { return JSON.parse(localStorage.getItem(HIST_KEY)) || []; } catch { return []; }
 }
 function saveHistory(sel, r) {
-  const entry = { b: sel.brand.name, m: sel.model.name, ref: sel.eng.ref, p: sel.eng.p, box: sel.box, year: sel.year, km: sel.km, price: sel.price, score: r.score, level: r.level };
+  const entry = { b: sel.brand.name, m: sel.model.name, ref: sel.eng.ref, p: sel.eng.p, box: sel.box, year: sel.year, km: sel.km, price: sel.price, score: r.score, level: r.level, median: r.median };
   const h = loadHistory().filter(x => !(x.b === entry.b && x.m === entry.m && x.year === entry.year && x.km === entry.km && x.price === entry.price));
   h.unshift(entry);
   localStorage.setItem(HIST_KEY, JSON.stringify(h.slice(0, 6)));
@@ -1832,6 +1928,63 @@ function replayHistory(item) {
   runAnalysis({ brand, model, eng: Object.assign({}, model.eng[ei], { p: item.p }), box: item.box, year: item.year, km: item.km, price: item.price });
 }
 renderHistory();
+
+/* ---------- Photo d'illustration (Wikimedia Commons, licence libre) ---------- */
+async function loadPhoto(sel) {
+  const card = $('photoCard');
+  card.hidden = true;
+  try {
+    const q = (sel.brand.name + ' ' + sel.model.name.replace(/[()]/g, ' ').replace(/\((classique|collection)\)/gi, '')).replace(/\s+/g, ' ').trim();
+    const u = 'https://fr.wikipedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrlimit=1&gsrsearch='
+      + encodeURIComponent(q) + '&prop=pageimages&piprop=thumbnail&pithumbsize=900';
+    const ctrl = new AbortController();
+    const tm = setTimeout(() => ctrl.abort(), 7000);
+    const res = await fetch(u, { signal: ctrl.signal });
+    clearTimeout(tm);
+    if (!res.ok) return;
+    const j = await res.json();
+    const pages = j.query && j.query.pages ? Object.values(j.query.pages) : [];
+    const src = pages[0] && pages[0].thumbnail && pages[0].thumbnail.source;
+    if (!src) return;
+    const img = $('carPhoto');
+    img.onload = () => { card.hidden = false; };
+    img.src = src;
+    img.alt = 'Photo d\'illustration : ' + q;
+  } catch { /* hors ligne ou introuvable : pas de photo, pas d'erreur */ }
+}
+
+/* ---------- Comparateur multi-annonces ---------- */
+function renderComparator() {
+  const h = loadHistory();
+  const card = $('compareCard');
+  if (h.length < 2) { card.hidden = true; return; }
+  card.hidden = false;
+  const bestScore = Math.max(...h.map(x => x.score));
+  $('cmpBody').innerHTML = h.map((x, i) => {
+    const delta = x.median ? x.price - x.median : null;
+    const dTxt = delta == null ? '—' : (delta > 0 ? '+' : '−') + Math.abs(Math.round(delta)).toLocaleString('fr-FR') + ' €';
+    const dCol = delta == null ? '' : (delta <= 0 ? 'style="color:var(--good)"' : 'style="color:var(--bad)"');
+    return '<tr class="cmp-row' + (x.score === bestScore ? ' best' : '') + '" data-i="' + i + '" tabindex="0" role="button" aria-label="Rouvrir ' + escapeHtml(x.b + ' ' + x.m) + '">'
+      + '<td>' + escapeHtml(x.b + ' ' + x.m) + (x.score === bestScore ? ' ★' : '') + '</td>'
+      + '<td>' + x.year + '</td>'
+      + '<td>' + x.km.toLocaleString('fr-FR') + '</td>'
+      + '<td>' + euro(x.price) + '</td>'
+      + '<td>' + (x.median ? euro(x.median) : '—') + '</td>'
+      + '<td ' + dCol + '>' + dTxt + '</td>'
+      + '<td class="sc">' + x.score + '</td></tr>';
+  }).join('');
+  $('cmpBody').querySelectorAll('.cmp-row').forEach(row => {
+    const go = () => replayHistory(loadHistory()[+row.dataset.i]);
+    row.addEventListener('click', go);
+    row.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+  });
+}
+$('clearHistBtn').addEventListener('click', () => {
+  localStorage.removeItem(HIST_KEY);
+  renderHistory();
+  renderComparator();
+});
+renderComparator();
 
 /* ---------- Stats count-up ---------- */
 function formatStat(el, val) { el.textContent = val.toLocaleString('fr-FR'); }
